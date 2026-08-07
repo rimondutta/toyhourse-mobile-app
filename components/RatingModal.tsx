@@ -39,7 +39,7 @@ const RatingModal = ({
             <View className="bg-surface rounded-3xl p-6 w-full max-w-md max-h-[80%]">
               <View className="items-center mb-4">
                 <View className="bg-primary/20 rounded-full w-16 h-16 items-center justify-center mb-3">
-                  <Ionicons name="star" size={32} color="#1DB954" />
+                  <Ionicons name="star" size={32} color="#4F46E5" />
                 </View>
                 <Text className="text-text-primary text-2xl font-bold mb-1">
                   Rate Your Products
@@ -90,7 +90,7 @@ const RatingModal = ({
                             <Ionicons
                               name={star <= currentRating ? "star" : "star-outline"}
                               size={32}
-                              color={star <= currentRating ? "#1DB954" : "#666"}
+                              color={star <= currentRating ? "#4F46E5" : "#666"}
                             />
                           </TouchableOpacity>
                         ))}
@@ -108,7 +108,7 @@ const RatingModal = ({
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
-                    <ActivityIndicator size="small" color="#121212" />
+                    <ActivityIndicator size="small" color="#0F172A" />
                   ) : (
                     <Text className="text-background font-bold text-base">Submit All Ratings</Text>
                   )}

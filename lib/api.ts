@@ -72,7 +72,7 @@ export async function getProducts(
   const { data } = await apiClient.get<ApiResponse<Product[]>>('/products', { params });
   return data;
 }
-
+ 
 /** GET /api/products/[id] — single product by MongoDB _id or slug */
 export async function getProduct(id: string): Promise<ApiResponse<Product>> {
   const { data } = await apiClient.get<ApiResponse<Product>>(`/products/${id}`);

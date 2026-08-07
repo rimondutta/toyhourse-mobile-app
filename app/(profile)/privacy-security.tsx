@@ -131,7 +131,7 @@ function PrivacyAndSecurityScreen() {
       {/* HEADER */}
       <View className="px-6 pb-5 border-b border-surface flex-row items-center">
         <TouchableOpacity onPress={() => router.back()} className="mr-4">
-          <Ionicons name="arrow-back" size={28} color="#fff" />
+          <Ionicons name="arrow-back" size={28} color="#0F172A" />
         </TouchableOpacity>
         <Text className="text-text-primary text-2xl font-bold">Privacy & Security</Text>
       </View>
@@ -153,7 +153,7 @@ function PrivacyAndSecurityScreen() {
             >
               <View className="flex-row items-center">
                 <View className="bg-primary/20 rounded-full w-12 h-12 items-center justify-center mr-4">
-                  <Ionicons name={setting.icon as any} size={24} color="#1DB954" />
+                  <Ionicons name={setting.icon as any} size={24} color="#4F46E5" />
                 </View>
 
                 <View className="flex-1">
@@ -168,12 +168,12 @@ function PrivacyAndSecurityScreen() {
                     value={setting.value}
                     onValueChange={(value) => handleToggle(setting.id, value)}
                     thumbColor="#FFFFFF"
-                    trackColor={{ false: "#2A2A2A", true: "#1DB954" }}
+                    trackColor={{ false: "#2A2A2A", true: "#4F46E5" }}
 
                     // ios_backgroundColor={"purple"}
                   />
                 ) : (
-                  <Ionicons name="chevron-forward" size={20} color="#666" />
+                  <Ionicons name="chevron-forward" size={20} color="#64748B" />
                 )}
               </View>
             </TouchableOpacity>
@@ -189,7 +189,7 @@ function PrivacyAndSecurityScreen() {
               <View className="bg-surface rounded-2xl p-4 mb-3">
                 <View className="flex-row items-center">
                   <View className="bg-primary/20 rounded-full w-12 h-12 items-center justify-center mr-4">
-                    <Ionicons name={setting.icon as any} size={24} color="#1DB954" />
+                    <Ionicons name={setting.icon as any} size={24} color="#4F46E5" />
                   </View>
                   <View className="flex-1">
                     <Text className="text-text-primary font-bold text-base mb-1">
@@ -200,7 +200,7 @@ function PrivacyAndSecurityScreen() {
                   <Switch
                     value={setting.value}
                     onValueChange={(value) => handleToggle(setting.id, value)}
-                    trackColor={{ false: "#2A2A2A", true: "#1DB954" }}
+                    trackColor={{ false: "#2A2A2A", true: "#4F46E5" }}
                     thumbColor="#FFFFFF"
                   />
                 </View>
@@ -221,7 +221,7 @@ function PrivacyAndSecurityScreen() {
             >
               <View className="flex-row items-center">
                 <View className="bg-primary/20 rounded-full w-12 h-12 items-center justify-center mr-4">
-                  <Ionicons name={setting.icon as any} size={24} color="#1DB954" />
+                  <Ionicons name={setting.icon as any} size={24} color="#4F46E5" />
                 </View>
                 <View className="flex-1">
                   <Text className="text-text-primary font-bold text-base mb-1">
@@ -229,7 +229,7 @@ function PrivacyAndSecurityScreen() {
                   </Text>
                   <Text className="text-text-secondary text-sm">{setting.description}</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#666" />
+                <Ionicons name="chevron-forward" size={20} color="#64748B" />
               </View>
             </TouchableOpacity>
           ))}
@@ -257,7 +257,7 @@ function PrivacyAndSecurityScreen() {
         {/* INFO ALERT */}
         <View className="px-6 pt-6 pb-4">
           <View className="bg-primary/10 rounded-2xl p-4 flex-row">
-            <Ionicons name="information-circle-outline" size={24} color="#1DB954" />
+            <Ionicons name="information-circle-outline" size={24} color="#4F46E5" />
             <Text className="text-text-secondary text-sm ml-3 flex-1">
               We take your privacy seriously. Your data is encrypted and stored securely. You can
               manage your privacy settings at any time.

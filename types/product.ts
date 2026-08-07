@@ -104,6 +104,13 @@ export interface Product {
   // Review summary (denormalized on the product)
   rating: number;
   reviewCount: number;
+  reviews?: {
+    name?: string;
+    rating: number;
+    date: string;
+    title?: string;
+    text: string;
+  }[];
 
   // ── Dynamic variation system ──
   /** When false: use price / inventory / images directly.

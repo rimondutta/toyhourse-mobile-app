@@ -5,6 +5,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import type { Product } from "@/types";
+
 
 function WishlistScreen() {
   const { wishlist, isLoading, isError, removeFromWishlist, isRemovingFromWishlist } =
@@ -24,16 +26,9 @@ function WishlistScreen() {
     ]);
   };
 
-  const handleAddToCart = (productId: string, productName: string) => {
-    addToCart(
-      { productId, quantity: 1 },
-      {
-        onSuccess: () => Alert.alert("Success", `${productName} added to cart!`),
-        onError: (error: any) => {
-          Alert.alert("Error", error?.response?.data?.error || "Failed to add to cart");
-        },
-      }
-    );
+  const handleAddToCart = (product: Product, productName: string) => {
+    addToCart({ productId: product._id, product, quantity: 1 });
+    Alert.alert("Success", `${productName} added to cart!`);
   };
 
   if (isLoading) return <LoadingUI />;
@@ -44,7 +39,7 @@ function WishlistScreen() {
       {/* HEADER */}
       <View className="px-6 pb-5 border-b border-surface flex-row items-center">
         <TouchableOpacity onPress={() => router.back()} className="mr-4">
-          <Ionicons name="arrow-back" size={28} color="#FFFFFF" />
+          <Ionicons name="arrow-back" size={28} color="#0F172A" />
         </TouchableOpacity>
         <Text className="text-text-primary text-2xl font-bold">Wishlist</Text>
         <Text className="text-text-secondary text-sm ml-auto">
@@ -54,7 +49,7 @@ function WishlistScreen() {
 
       {wishlist.length === 0 ? (
         <View className="flex-1 items-center justify-center px-6">
-          <Ionicons name="heart-outline" size={80} color="#666" />
+          <Ionicons name="heart-outline" size={80} color="#64748B" />
           <Text className="text-text-primary font-semibold text-xl mt-4">
             Your wishlist is empty
           </Text>
@@ -127,11 +122,11 @@ function WishlistScreen() {
                     <TouchableOpacity
                       className="bg-primary rounded-xl py-3 items-center"
                       activeOpacity={0.8}
-                      onPress={() => handleAddToCart(item._id, item.title)}
+                      onPress={() => handleAddToCart(item, item.title)}
                       disabled={isAddingToCart}
                     >
                       {isAddingToCart ? (
-                        <ActivityIndicator size="small" color="#121212" />
+                        <ActivityIndicator size="small" color="#0F172A" />
                       ) : (
                         <Text className="text-background font-bold">Add to Cart</Text>
                       )}
@@ -153,7 +148,7 @@ function LoadingUI() {
     <SafeScreen>
       <View className="px-6 pb-5 border-b border-surface flex-row items-center">
         <TouchableOpacity onPress={() => router.back()} className="mr-4">
-          <Ionicons name="arrow-back" size={28} color="#FFFFFF" />
+          <Ionicons name="arrow-back" size={28} color="#0F172A" />
         </TouchableOpacity>
         <Text className="text-text-primary text-2xl font-bold">Wishlist</Text>
       </View>
@@ -170,7 +165,7 @@ function ErrorUI() {
     <SafeScreen>
       <View className="px-6 pb-5 border-b border-surface flex-row items-center">
         <TouchableOpacity onPress={() => router.back()} className="mr-4">
-          <Ionicons name="arrow-back" size={28} color="#fff" />
+          <Ionicons name="arrow-back" size={28} color="#0F172A" />
         </TouchableOpacity>
         <Text className="text-text-primary text-2xl font-bold">Wishlist</Text>
       </View>

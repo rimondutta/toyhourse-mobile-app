@@ -22,7 +22,7 @@ export default function AddressCard({
       <View className="flex-row items-center justify-between mb-4">
         <View className="flex-row items-center">
           <View className="bg-primary/20 rounded-full w-12 h-12 items-center justify-center mr-3">
-            <Ionicons name="location" size={24} color="#1DB954" />
+            <Ionicons name="location" size={24} color="#4F46E5" />
           </View>
           <Text className="text-text-primary font-bold text-lg">{address.label}</Text>
         </View>

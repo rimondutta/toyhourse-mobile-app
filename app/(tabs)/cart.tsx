@@ -3,31 +3,74 @@ import { useAddresses } from "@/hooks/useAddressess";
 import useCart from "@/hooks/useCart";
 import apiClient from "@/lib/api";
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
-import { useStripe } from "@stripe/stripe-react-native";
+
 import { useState } from "react";
+import { TextInput } from "react-native";
 import { Address } from "@/types";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import OrderSummary from "@/components/OrderSummary";
 import AddressSelectionModal from "@/components/AddressSelectionModal";
+import { useAuth } from "@/context/AuthContext";
 
 import * as Sentry from "@sentry/react-native";
 
 const CartScreen = () => {
+  const { user } = useAuth();
   const { cart, isLoading, isError, addToCart, removeFromCart, updateQuantity, cartTotal, isRemoving, isUpdating, cartItemCount, clearCart } = useCart();
   const { addresses } = useAddresses();
   const api = apiClient;
-  const { initPaymentSheet, presentPaymentSheet } = useStripe();
+
 
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [addressModalVisible, setAddressModalVisible] = useState(false);
+
+  // Coupon state
+  const [couponCode, setCouponCode] = useState("");
+  const [discount, setDiscount] = useState<{ amount: number; type: string } | null>(null);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState("");
 
   const cartItems = cart?.items || [];
   const subtotal = cartTotal;
   const shipping = 10.0; // $10 shipping fee
   const tax = subtotal * 0.08; // 8% tax
-  const total = subtotal + shipping + tax;
+  
+  // Calculate discount amount based on backend response
+  let discountAmount = discount?.amount || 0;
+  if (discount?.type === "percentage") {
+    discountAmount = (subtotal * discount.amount) / 100;
+  }
+
+  const total = subtotal + shipping + tax - discountAmount;
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setCouponLoading(true);
+    setCouponError("");
+    try {
+      const { data } = await api.post("/store/coupons/validate", {
+        code: couponCode,
+        orderTotal: subtotal,
+      });
+      if (data.valid) {
+        setDiscount({ amount: data.discountValue, type: data.discountType });
+      } else {
+        setCouponError(data.message || "Invalid coupon");
+      }
+    } catch (err: any) {
+      setCouponError(err?.response?.data?.message || "Failed to apply coupon");
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setCouponCode("");
+    setDiscount(null);
+    setCouponError("");
+  };
 
   const handleQuantityChange = (productId: string, currentQuantity: number, change: number) => {
     const newQuantity = currentQuantity + change;
@@ -58,8 +101,7 @@ const CartScreen = () => {
   const handleProceedWithPayment = async (selectedAddress: Address) => {
     setAddressModalVisible(false);
 
-    // log chechkout initiated
-    Sentry.logger.info("Checkout initiated", {
+    Sentry.logger.info("Checkout initiated (COD)", {
       itemCount: cartItemCount,
       total: total.toFixed(2),
       city: selectedAddress.city,
@@ -68,68 +110,53 @@ const CartScreen = () => {
     try {
       setPaymentLoading(true);
 
-      // create payment intent with cart items and shipping address
-      const { data } = await api.post("/payment/create-intent", {
-        cartItems,
+      const orderItems = cartItems.map((item) => ({
+        product: item.product._id, // Used by mongoose schema
+        productId: item.product._id, // Used by bulkWrite logic
+        quantity: item.quantity,
+        price: item.product.price,
+        title: item.product.title,
+      }));
+
+      const { data } = await api.post("/store/orders", {
+        customerName: selectedAddress.fullName,
+        customerEmail: user?.email || "guest@example.com",
+        items: orderItems,
+        totalAmount: total,
+        shippingCost: shipping,
+        discountAmount: discountAmount,
+        couponCode: couponCode || undefined,
         shippingAddress: {
-          fullName: selectedAddress.fullName,
-          streetAddress: selectedAddress.streetAddress,
+          addressLine1: selectedAddress.streetAddress,
           city: selectedAddress.city,
           state: selectedAddress.state,
-          zipCode: selectedAddress.zipCode,
-          phoneNumber: selectedAddress.phoneNumber,
+          postcode: selectedAddress.zipCode,
+          phone: selectedAddress.phoneNumber,
         },
+        paymentMethod: "cod",
       });
 
-      const { error: initError } = await initPaymentSheet({
-        paymentIntentClientSecret: data.clientSecret,
-        merchantDisplayName: "Your Store Name",
-      });
-
-      if (initError) {
-        Sentry.logger.error("Payment sheet init failed", {
-          errorCode: initError.code,
-          errorMessage: initError.message,
-          cartTotal: total,
-          itemCount: cartItems.length,
-        });
-
-        Alert.alert("Error", initError.message);
-        setPaymentLoading(false);
-        return;
-      }
-
-      // present payment sheet
-      const { error: presentError } = await presentPaymentSheet();
-
-      if (presentError) {
-        Sentry.logger.error("Payment cancelled", {
-          errorCode: presentError.code,
-          errorMessage: presentError.message,
-          cartTotal: total,
-          itemCount: cartItems.length,
-        });
-
-        Alert.alert("Payment cancelled", presentError.message);
-      } else {
-        Sentry.logger.info("Payment successful", {
+      if (data.success) {
+        Sentry.logger.info("Order successful", {
           total: total.toFixed(2),
           itemCount: cartItems.length,
         });
 
-        Alert.alert("Success", "Your payment was successful! Your order is being processed.", [
+        Alert.alert("Success", "Your order has been placed successfully via Cash on Delivery!", [
           { text: "OK", onPress: () => {} },
         ]);
         clearCart();
+      } else {
+        throw new Error(data.error || "Failed to create order");
       }
-    } catch (error) {
-      Sentry.logger.error("Payment failed", {
+    } catch (error: any) {
+      Sentry.logger.error("Order failed", {
         error: error instanceof Error ? error.message : "Unknown error",
         cartTotal: total,
         itemCount: cartItems.length,
       });
 
-      Alert.alert("Error", "Failed to process payment");
+      Alert.alert("Error", error?.response?.data?.error || "Failed to process order");
     } finally {
       setPaymentLoading(false);
     }
@@ -191,9 +218,9 @@ const CartScreen = () => {
                       disabled={isUpdating}
                     >
                       {isUpdating ? (
-                        <ActivityIndicator size="small" color="#FFFFFF" />
+                        <ActivityIndicator size="small" color="#0F172A" />
                       ) : (
-                        <Ionicons name="remove" size={18} color="#FFFFFF" />
+                        <Ionicons name="remove" size={18} color="#0F172A" />
                       )}
                     </TouchableOpacity>
 
@@ -208,9 +235,9 @@ const CartScreen = () => {
                       disabled={isUpdating}
                     >
                       {isUpdating ? (
-                        <ActivityIndicator size="small" color="#121212" />
+                        <ActivityIndicator size="small" color="#0F172A" />
                       ) : (
-                        <Ionicons name="add" size={18} color="#121212" />
+                        <Ionicons name="add" size={18} color="#0F172A" />
                       )}
                     </TouchableOpacity>
 
@@ -229,7 +256,67 @@ const CartScreen = () => {
           ))}
         </View>
 
-        <OrderSummary subtotal={subtotal} shipping={shipping} tax={tax} total={total} />
+        {/* Coupon Input */}
+        <View className="px-6 mt-6">
+          <View className="bg-surface rounded-2xl border border-surface p-4">
+            {discount ? (
+              <View className="flex-row items-center justify-between">
+                <View className="flex-row items-center">
+                  <View className="w-10 h-10 bg-primary/20 rounded-full items-center justify-center mr-3">
+                    <Ionicons name="pricetag" size={18} color="#4F46E5" />
+                  </View>
+                  <View>
+                    <Text className="text-text-primary font-bold">{couponCode.toUpperCase()}</Text>
+                    <Text className="text-primary text-xs font-semibold">
+                      {discount.type === "percentage" ? `${discount.amount}% OFF` : `৳${discount.amount} OFF`} applied
+                    </Text>
+                  </View>
+                </View>
+                <TouchableOpacity onPress={removeCoupon} activeOpacity={0.7} className="p-2">
+                  <Ionicons name="close-circle" size={20} color="#FF6B6B" />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View>
+                <View className="flex-row items-center">
+                  <View className="flex-1 bg-background-lighter rounded-xl flex-row items-center px-4 py-3 mr-3">
+                    <Ionicons name="pricetag-outline" size={18} color="#64748B" />
+                    <TextInput
+                      className="flex-1 ml-3 text-text-primary text-base"
+                      placeholder="Enter promo code"
+                      placeholderTextColor="#94A3B8"
+                      value={couponCode}
+                      onChangeText={(text) => {
+                        setCouponCode(text.toUpperCase());
+                        setCouponError("");
+                      }}
+                      autoCapitalize="characters"
+                      autoCorrect={false}
+                    />
+                  </View>
+                  <TouchableOpacity
+                    className={`bg-primary rounded-xl px-4 py-4 items-center justify-center ${
+                      (!couponCode.trim() || couponLoading) ? "opacity-50" : ""
+                    }`}
+                    disabled={!couponCode.trim() || couponLoading}
+                    onPress={handleApplyCoupon}
+                  >
+                    {couponLoading ? (
+                      <ActivityIndicator size="small" color="#0F172A" />
+                    ) : (
+                      <Text className="text-background font-bold text-sm">Apply</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+                {couponError ? (
+                  <Text className="text-red-500 text-xs mt-2 ml-1">{couponError}</Text>
+                ) : null}
+              </View>
+            )}
+          </View>
+        </View>
+
+        <OrderSummary subtotal={subtotal} shipping={shipping} tax={tax} discount={discountAmount} total={total} />
       </ScrollView>
 
       <View
@@ -239,7 +326,7 @@ const CartScreen = () => {
         {/* Quick Stats */}
         <View className="flex-row items-center justify-between mb-4">
           <View className="flex-row items-center">
-            <Ionicons name="cart" size={20} color="#1DB954" />
+            <Ionicons name="cart" size={20} color="#4F46E5" />
             <Text className="text-text-secondary ml-2">
               {cartItemCount} {cartItemCount === 1 ? "item" : "items"}
             </Text>
@@ -258,11 +345,11 @@ const CartScreen = () => {
         >
           <View className="py-5 flex-row items-center justify-center">
             {paymentLoading ? (
-              <ActivityIndicator size="small" color="#121212" />
+              <ActivityIndicator size="small" color="#0F172A" />
             ) : (
               <>
                 <Text className="text-background font-bold text-lg mr-2">Checkout</Text>
-                <Ionicons name="arrow-forward" size={20} color="#121212" />
+                <Ionicons name="arrow-forward" size={20} color="#0F172A" />
               </>
             )}
           </View>
@@ -309,7 +396,7 @@ function EmptyUI() {
         <Text className="text-text-primary text-3xl font-bold tracking-tight">Cart</Text>
       </View>
       <View className="flex-1 items-center justify-center px-6">
-        <Ionicons name="cart-outline" size={80} color="#666" />
+        <Ionicons name="cart-outline" size={80} color="#64748B" />
         <Text className="text-text-primary font-semibold text-xl mt-4">Your cart is empty</Text>
         <Text className="text-text-secondary text-center mt-2">
           Add some products to get started

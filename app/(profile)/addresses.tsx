@@ -130,7 +130,7 @@ function AddressesScreen() {
 
       {addresses.length === 0 ? (
         <View className="flex-1 items-center justify-center px-6">
-          <Ionicons name="location-outline" size={80} color="#666" />
+          <Ionicons name="location-outline" size={80} color="#64748B" />
           <Text className="text-text-primary font-semibold text-xl mt-4">No addresses yet</Text>
           <Text className="text-text-secondary text-center mt-2">
             Add your first delivery address
@@ -167,7 +167,7 @@ function AddressesScreen() {
               onPress={handleAddAddress}
             >
               <View className="flex-row items-center">
-                <Ionicons name="add-circle-outline" size={24} color="#121212" />
+                <Ionicons name="add-circle-outline" size={24} color="#0F172A" />
                 <Text className="text-background font-bold text-base ml-2">Add New Address</Text>
               </View>
             </TouchableOpacity>

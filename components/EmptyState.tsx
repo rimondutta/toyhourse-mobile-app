@@ -24,7 +24,7 @@ export function EmptyState({
         </View>
       )}
       <View className="flex-1 items-center justify-center px-6">
-        <Ionicons name={icon} size={iconSize} color="#666" />
+        <Ionicons name={icon} size={iconSize} color="#64748B" />
         <Text className="text-text-primary font-semibold text-xl mt-4">{title}</Text>
         {description && <Text className="text-text-secondary text-center mt-2">{description}</Text>}
       </View>

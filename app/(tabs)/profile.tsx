@@ -7,10 +7,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
 const MENU_ITEMS = [
-  { id: 1, icon: "person-outline", title: "Edit Profile", color: "#3B82F6", action: "/profile" },
+  { id: 1, icon: "person-outline", title: "Edit Profile", color: "#3B82F6", action: "/edit-profile" },
   { id: 2, icon: "list-outline", title: "Orders", color: "#10B981", action: "/orders" },
   { id: 3, icon: "location-outline", title: "Addresses", color: "#F59E0B", action: "/addresses" },
   { id: 4, icon: "heart-outline", title: "Wishlist", color: "#EF4444", action: "/wishlist" },
+  { id: 5, icon: "newspaper-outline", title: "Blogs", color: "#8B5CF6", action: "/blogs" },
+  { id: 6, icon: "information-circle-outline", title: "About Us", color: "#EC4899", action: "/about" },
+  { id: 7, icon: "mail-outline", title: "Contact Us", color: "#14B8A6", action: "/contact" },
 ] as const;
 
 const ProfileScreen = () => {
@@ -25,7 +28,7 @@ const ProfileScreen = () => {
     return (
       <SafeScreen>
         <View className="flex-1 px-6 justify-center items-center">
-          <Ionicons name="person-circle-outline" size={100} color="#666" />
+          <Ionicons name="person-circle-outline" size={100} color="#64748B" />
           <Text className="text-text-primary text-2xl font-bold mt-6 mb-2">
             You are not signed in
           </Text>
@@ -68,7 +71,7 @@ const ProfileScreen = () => {
                   </View>
                 )}
                 <View className="absolute -bottom-1 -right-1 bg-primary rounded-full size-7 items-center justify-center border-2 border-surface">
-                  <Ionicons name="checkmark" size={16} color="#121212" />
+                  <Ionicons name="checkmark" size={16} color="#0F172A" />
                 </View>
               </View>
 
@@ -112,10 +115,10 @@ const ProfileScreen = () => {
             activeOpacity={0.7}
           >
             <View className="flex-row items-center">
-              <Ionicons name="notifications-outline" size={22} color="#FFFFFF" />
+              <Ionicons name="notifications-outline" size={22} color="#0F172A" />
               <Text className="text-text-primary font-semibold ml-3">Notifications</Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#666" />
+            <Ionicons name="chevron-forward" size={20} color="#64748B" />
           </TouchableOpacity>
         </View>
 
@@ -127,10 +130,10 @@ const ProfileScreen = () => {
             onPress={() => router.push("/privacy-security")}
           >
             <View className="flex-row items-center">
-              <Ionicons name="shield-checkmark-outline" size={22} color="#FFFFFF" />
+              <Ionicons name="shield-checkmark-outline" size={22} color="#0F172A" />
               <Text className="text-text-primary font-semibold ml-3">Privacy & Security</Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#666" />
+            <Ionicons name="chevron-forward" size={20} color="#64748B" />
           </TouchableOpacity>
         </View>
 

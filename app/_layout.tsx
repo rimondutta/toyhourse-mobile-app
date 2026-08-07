@@ -3,7 +3,7 @@ import "../global.css";
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/context/AuthContext";
 import * as Sentry from "@sentry/react-native";
-import { StripeProvider } from "@stripe/stripe-react-native";
+
 
 Sentry.init({
   dsn: "https://fb6731b90610cc08333e6c16ffac5724@o4509813037137920.ingest.de.sentry.io/4510451611205712",
@@ -61,14 +61,15 @@ function AppSync() {
   return null;
 }
 
+import { StatusBar } from "expo-status-bar";
+
 export default Sentry.wrap(function RootLayout() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
         <AppSync />
-        <StripeProvider publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY!}>
-          <Stack screenOptions={{ headerShown: false }} />
-        </StripeProvider>
+        <StatusBar style="dark" />
+        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#F8FAFC' } }} />
       </QueryClientProvider>
     </AuthProvider>
   );

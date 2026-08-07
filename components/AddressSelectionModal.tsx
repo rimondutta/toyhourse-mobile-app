@@ -116,7 +116,7 @@ const AddressSelectionModal = ({
               </View>
               {selectedAddress?._id === address._id && (
                 <View className="bg-primary rounded-full p-2 ml-3">
-                  <Ionicons name="checkmark" size={24} color="#121212" />
+                  <Ionicons name="checkmark" size={24} color="#0F172A" />
                 </View>
               )}
             </View>
@@ -136,14 +136,14 @@ const AddressSelectionModal = ({
         <TextInput
           className="bg-surface text-text-primary px-4 py-4 rounded-2xl border border-surface text-base"
           placeholder="Full Name"
-          placeholderTextColor="#666"
+          placeholderTextColor="#94A3B8"
           value={fullName}
           onChangeText={setFullName}
         />
         <TextInput
           className="bg-surface text-text-primary px-4 py-4 rounded-2xl border border-surface text-base"
           placeholder="Street Address"
-          placeholderTextColor="#666"
+          placeholderTextColor="#94A3B8"
           value={streetAddress}
           onChangeText={setStreetAddress}
         />
@@ -151,14 +151,14 @@ const AddressSelectionModal = ({
           <TextInput
             className="flex-1 bg-surface text-text-primary px-4 py-4 rounded-2xl border border-surface text-base"
             placeholder="City"
-            placeholderTextColor="#666"
+            placeholderTextColor="#94A3B8"
             value={city}
             onChangeText={setCity}
           />
           <TextInput
             className="w-1/3 bg-surface text-text-primary px-4 py-4 rounded-2xl border border-surface text-base"
             placeholder="State"
-            placeholderTextColor="#666"
+            placeholderTextColor="#94A3B8"
             value={state}
             onChangeText={setState}
           />
@@ -167,7 +167,7 @@ const AddressSelectionModal = ({
           <TextInput
             className="w-1/3 bg-surface text-text-primary px-4 py-4 rounded-2xl border border-surface text-base"
             placeholder="ZIP Code"
-            placeholderTextColor="#666"
+            placeholderTextColor="#94A3B8"
             value={zipCode}
             onChangeText={setZipCode}
             keyboardType="number-pad"
@@ -175,7 +175,7 @@ const AddressSelectionModal = ({
           <TextInput
             className="flex-1 bg-surface text-text-primary px-4 py-4 rounded-2xl border border-surface text-base"
             placeholder="Phone Number"
-            placeholderTextColor="#666"
+            placeholderTextColor="#94A3B8"
             value={phoneNumber}
             onChangeText={setPhoneNumber}
             keyboardType="phone-pad"
@@ -199,7 +199,7 @@ const AddressSelectionModal = ({
                 {isGuestOrNoAddresses ? "Shipping Address" : "Select Address"}
               </Text>
               <TouchableOpacity onPress={onClose} className="bg-surface rounded-full p-2">
-                <Ionicons name="close" size={24} color="#FFFFFF" />
+                <Ionicons name="close" size={24} color="#0F172A" />
               </TouchableOpacity>
             </View>
 
@@ -217,13 +217,13 @@ const AddressSelectionModal = ({
               >
                 <View className="flex-row items-center justify-center">
                   {isProcessing ? (
-                    <ActivityIndicator size="small" color="#121212" />
+                    <ActivityIndicator size="small" color="#0F172A" />
                   ) : (
                     <>
                       <Text className="text-background font-bold text-lg mr-2">
                         Continue to Payment
                       </Text>
-                      <Ionicons name="arrow-forward" size={20} color="#121212" />
+                      <Ionicons name="arrow-forward" size={20} color="#0F172A" />
                     </>
                   )}
                 </View>

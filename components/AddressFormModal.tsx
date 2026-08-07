@@ -58,7 +58,7 @@ const AddressFormModal = ({
               {isEditing ? "Edit Address" : "Add New Address"}
             </Text>
             <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={28} color="#FFFFFF" />
+              <Ionicons name="close" size={28} color="#0F172A" />
             </TouchableOpacity>
           </View>
 
@@ -74,7 +74,7 @@ const AddressFormModal = ({
                 <TextInput
                   className="bg-surface text-text-primary p-4 rounded-2xl text-base"
                   placeholder="e.g., Home, Work, Office"
-                  placeholderTextColor="#666"
+                  placeholderTextColor="#94A3B8"
                   value={addressForm.label}
                   onChangeText={(text) => onFormChange({ ...addressForm, label: text })}
                 />
@@ -86,7 +86,7 @@ const AddressFormModal = ({
                 <TextInput
                   className="bg-surface text-text-primary px-4 py-4 rounded-2xl text-base"
                   placeholder="Enter your full name"
-                  placeholderTextColor="#666"
+                  placeholderTextColor="#94A3B8"
                   value={addressForm.fullName}
                   onChangeText={(text) => onFormChange({ ...addressForm, fullName: text })}
                 />
@@ -98,7 +98,7 @@ const AddressFormModal = ({
                 <TextInput
                   className="bg-surface text-text-primary px-4 py-4 rounded-2xl text-base"
                   placeholder="Street address, apt/suite number"
-                  placeholderTextColor="#666"
+                  placeholderTextColor="#94A3B8"
                   value={addressForm.streetAddress}
                   onChangeText={(text) => onFormChange({ ...addressForm, streetAddress: text })}
                   multiline
@@ -111,7 +111,7 @@ const AddressFormModal = ({
                 <TextInput
                   className="bg-surface text-text-primary px-4 py-4 rounded-2xl text-base"
                   placeholder="e.g., New York"
-                  placeholderTextColor="#666"
+                  placeholderTextColor="#94A3B8"
                   value={addressForm.city}
                   onChangeText={(text) => onFormChange({ ...addressForm, city: text })}
                 />
@@ -123,7 +123,7 @@ const AddressFormModal = ({
                 <TextInput
                   className="bg-surface text-text-primary px-4 py-4 rounded-2xl text-base"
                   placeholder="e.g., NY"
-                  placeholderTextColor="#666"
+                  placeholderTextColor="#94A3B8"
                   value={addressForm.state}
                   onChangeText={(text) => onFormChange({ ...addressForm, state: text })}
                 />
@@ -135,7 +135,7 @@ const AddressFormModal = ({
                 <TextInput
                   className="bg-surface text-text-primary px-4 py-4 rounded-2xl text-base"
                   placeholder="e.g., 10001"
-                  placeholderTextColor="#666"
+                  placeholderTextColor="#94A3B8"
                   value={addressForm.zipCode}
                   onChangeText={(text) => onFormChange({ ...addressForm, zipCode: text })}
                   keyboardType="numeric"
@@ -148,7 +148,7 @@ const AddressFormModal = ({
                 <TextInput
                   className="bg-surface text-text-primary px-4 py-4 rounded-2xl text-base"
                   placeholder="+1 (555) 123-4567"
-                  placeholderTextColor="#666"
+                  placeholderTextColor="#94A3B8"
                   value={addressForm.phoneNumber}
                   onChangeText={(text) => onFormChange({ ...addressForm, phoneNumber: text })}
                   keyboardType="phone-pad"
@@ -173,7 +173,7 @@ const AddressFormModal = ({
                 disabled={isAddingAddress || isUpdatingAddress}
               >
                 {isAddingAddress || isUpdatingAddress ? (
-                  <ActivityIndicator size="small" color="#121212" />
+                  <ActivityIndicator size="small" color="#0F172A" />
                 ) : (
                   <Text className="text-background font-bold text-lg">
                     {isEditing ? "Save Changes" : "Add Address"}

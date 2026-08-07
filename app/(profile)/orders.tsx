@@ -66,7 +66,7 @@ function OrdersScreen() {
       {/* Header */}
       <View className="px-6 pb-5 border-b border-surface flex-row items-center">
         <TouchableOpacity onPress={() => router.back()} className="mr-4">
-          <Ionicons name="arrow-back" size={28} color="#FFFFFF" />
+          <Ionicons name="arrow-back" size={28} color="#0F172A" />
         </TouchableOpacity>
         <Text className="text-text-primary text-2xl font-bold">My Orders</Text>
       </View>
@@ -151,7 +151,7 @@ function OrdersScreen() {
                     {order.status === "delivered" &&
                       (order.hasReviewed ? (
                         <View className="bg-primary/20 px-5 py-3 rounded-full flex-row items-center">
-                          <Ionicons name="checkmark-circle" size={18} color="#1DB954" />
+                          <Ionicons name="checkmark-circle" size={18} color="#4F46E5" />
                           <Text className="text-primary font-bold text-sm ml-2">Reviewed</Text>
                         </View>
                       ) : (
@@ -160,7 +160,7 @@ function OrdersScreen() {
                           activeOpacity={0.7}
                           onPress={() => handleOpenRating(order)}
                         >
-                          <Ionicons name="star" size={18} color="#121212" />
+                          <Ionicons name="star" size={18} color="#0F172A" />
                           <Text className="text-background font-bold text-sm ml-2">
                             Leave Rating
                           </Text>
@@ -214,7 +214,7 @@ function ErrorUI() {
 function EmptyUI() {
   return (
     <View className="flex-1 items-center justify-center px-6">
-      <Ionicons name="receipt-outline" size={80} color="#666" />
+      <Ionicons name="receipt-outline" size={80} color="#64748B" />
       <Text className="text-text-primary font-semibold text-xl mt-4">No orders yet</Text>
       <Text className="text-text-secondary text-center mt-2">
         Your order history will appear here

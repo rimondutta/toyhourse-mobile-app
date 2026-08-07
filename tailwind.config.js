@@ -7,28 +7,28 @@ module.exports = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "#1DB954", // spotify green
-          light: "#1ED760",
-          dark: "#1AA34A",
+          DEFAULT: "#C9F31D", // Neon Lime
+          light: "#D8F753",
+          dark: "#A3C710",
         },
         background: {
-          DEFAULT: "#121212", // dark background
-          light: "#181818",
-          lighter: "#282828",
+          DEFAULT: "#FFFFFF", // Pure White
+          light: "#FFFFFF",
+          lighter: "#F5F5F5",
         },
         surface: {
-          DEFAULT: "#282828",
-          light: "#3E3E3E",
+          DEFAULT: "#FFFFFF",
+          light: "#F5F5F5",
         },
         text: {
-          primary: "#FFFFFF",
-          secondary: "#B3B3B3",
-          tertiary: "#6A6A6A",
+          primary: "#000000", // Pure Black
+          secondary: "#666666",
+          tertiary: "#999999",
         },
         accent: {
-          DEFAULT: "#1DB954",
-          red: "#F44336",
-          yellow: "#FFC107",
+          DEFAULT: "#0EA5E9", // Sky Blue 500
+          red: "#EF4444",     // Red 500
+          yellow: "#F59E0B",  // Amber 500
         },
       },
     },

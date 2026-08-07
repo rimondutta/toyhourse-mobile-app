@@ -1,10 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/lib/api";
 import { Address } from "@/types";
+import { useAuth } from "@/context/AuthContext";
 
 export const useAddresses = () => {
   const api = apiClient;
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const {
     data: addresses,
@@ -16,7 +18,9 @@ export const useAddresses = () => {
       const { data } = await api.get<{ addresses: Address[] }>("/users/addresses");
       return data.addresses;
     },
+    enabled: !!user, // Only fetch addresses if logged in
   });
+
 
   const addAddressMutation = useMutation({
     mutationFn: async (addressData: Omit<Address, "_id">) => {
