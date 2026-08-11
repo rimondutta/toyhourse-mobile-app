@@ -8,15 +8,22 @@ import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View, RefreshControl } from "react-native";
 
 function OrdersScreen() {
-  const { data: orders, isLoading, isError } = useOrders();
+  const { data: orders, isLoading, isError, refetch } = useOrders();
   const { createReviewAsync, isCreatingReview } = useReviews();
 
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [productRatings, setProductRatings] = useState<{ [key: string]: number }>({});
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
 
   const handleOpenRating = (order: Order) => {
     setShowRatingModal(true);
@@ -82,6 +89,7 @@ function OrdersScreen() {
           className="flex-1"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 100 }}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#8B5CF6" colors={["#8B5CF6"]} />}
         >
           <View className="px-6 py-4">
             {orders.map((order) => {
@@ -144,7 +152,7 @@ function OrdersScreen() {
                     <View>
                       <Text className="text-text-secondary text-xs mb-1">{totalItems} items</Text>
                       <Text className="text-primary font-bold text-xl">
-                        ${order.totalPrice.toFixed(2)}
+                        ৳{order.totalPrice.toFixed(2)}
                       </Text>
                     </View>
 

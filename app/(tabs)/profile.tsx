@@ -1,10 +1,14 @@
 import SafeScreen from "@/components/SafeScreen";
 import { useAuth } from "@/context/AuthContext";
 
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View, RefreshControl } from "react-native";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import * as ImagePicker from "expo-image-picker";
+import { useState } from "react";
+import { Alert, ActivityIndicator } from "react-native";
+import apiClient from "@/lib/api";
 
 const MENU_ITEMS = [
   { id: 1, icon: "person-outline", title: "Edit Profile", color: "#3B82F6", action: "/edit-profile" },
@@ -17,11 +21,85 @@ const MENU_ITEMS = [
 ] as const;
 
 const ProfileScreen = () => {
-  const { signOut, user } = useAuth();
+  const { signOut, user, refreshUser } = useAuth();
+  const [localImage, setLocalImage] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refreshUser();
+    setRefreshing(false);
+  };
 
   const handleMenuPress = (action: (typeof MENU_ITEMS)[number]["action"]) => {
-    if (action === "/profile") return;
     router.push(action);
+  };
+
+  const processProfileImage = async (result: ImagePicker.ImagePickerResult) => {
+    if (result.canceled || !result.assets[0].base64) return;
+    
+    setIsUploading(true);
+    setLocalImage(result.assets[0].uri); // Show optimistic update
+
+    try {
+      const base64Data = `data:${result.assets[0].mimeType || 'image/jpeg'};base64,${result.assets[0].base64}`;
+      const response = await apiClient.post('/users/profile/image', { imageBase64: base64Data });
+      
+      if (response.data?.success) {
+        await refreshUser();
+        Alert.alert("Success", "Profile photo updated successfully!");
+      } else {
+        throw new Error("Failed to upload image");
+      }
+    } catch (error: any) {
+      console.error(error);
+      Alert.alert("Error", "Could not upload profile photo.");
+      setLocalImage(null); // Revert optimistic update
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleImageChange = async () => {
+    if (isUploading) return;
+    Alert.alert(
+      "Change Profile Photo",
+      "Choose a method",
+      [
+        {
+          text: "Camera",
+          onPress: async () => {
+            const { granted } = await ImagePicker.requestCameraPermissionsAsync();
+            if (!granted) return Alert.alert("Permission Denied", "Camera permission is required.");
+            const result = await ImagePicker.launchCameraAsync({
+              mediaTypes: ['images'],
+              allowsEditing: true,
+              aspect: [1, 1],
+              quality: 0.8,
+              base64: true,
+            });
+            processProfileImage(result);
+          },
+        },
+        {
+          text: "Gallery",
+          onPress: async () => {
+            const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (!granted) return Alert.alert("Permission Denied", "Gallery permission is required.");
+            const result = await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ['images'],
+              allowsEditing: true,
+              aspect: [1, 1],
+              quality: 0.8,
+              base64: true,
+            });
+            processProfileImage(result);
+          },
+        },
+        { text: "Cancel", style: "cancel" },
+      ]
+    );
   };
 
   if (!user) {
@@ -53,15 +131,16 @@ const ProfileScreen = () => {
         className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#8B5CF6" colors={["#8B5CF6"]} />}
       >
         {/* HEADER */}
         <View className="px-6 pb-8">
           <View className="bg-surface rounded-3xl p-6">
             <View className="flex-row items-center">
-              <View className="relative">
-                {user.image ? (
+              <TouchableOpacity className="relative" onPress={handleImageChange} activeOpacity={0.8}>
+                {localImage || user.image ? (
                   <Image
-                    source={user.image}
+                    source={{ uri: (localImage || user.image) as string }}
                     style={{ width: 80, height: 80, borderRadius: 40 }}
                     transition={200}
                   />
@@ -70,10 +149,16 @@ const ProfileScreen = () => {
                     <Ionicons name="person" size={36} color="#00D9FF" />
                   </View>
                 )}
-                <View className="absolute -bottom-1 -right-1 bg-primary rounded-full size-7 items-center justify-center border-2 border-surface">
-                  <Ionicons name="checkmark" size={16} color="#0F172A" />
-                </View>
-              </View>
+                {isUploading ? (
+                  <View className="absolute -bottom-1 -right-1 bg-surface rounded-full size-8 items-center justify-center border-2 border-surface shadow-sm">
+                    <ActivityIndicator size="small" color="#8B5CF6" />
+                  </View>
+                ) : (
+                  <View className="absolute -bottom-1 -right-1 bg-primary rounded-full size-8 items-center justify-center border-2 border-surface shadow-sm">
+                    <Ionicons name="camera" size={16} color="#0F172A" />
+                  </View>
+                )}
+              </TouchableOpacity>
 
               <View className="flex-1 ml-4">
                 <Text className="text-text-primary text-2xl font-bold mb-1">

@@ -14,6 +14,11 @@ import {
   Platform,
 } from "react-native";
 
+const PURPLE = "#8B5CF6";
+const LIGHT_PURPLE = "#F9F5FF";
+const DARK_TEXT = "#1F2937";
+const LIGHT_TEXT = "#9CA3AF";
+
 const LoginScreen = () => {
   const { signIn, continueAsGuest } = useAuth();
 
@@ -46,7 +51,7 @@ const LoginScreen = () => {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: "#F8FAFC" }}
+      style={{ flex: 1, backgroundColor: LIGHT_PURPLE }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
@@ -56,39 +61,37 @@ const LoginScreen = () => {
         showsVerticalScrollIndicator={false}
       >
         {/* BRAND HEADER */}
-        <View style={{ alignItems: "center", marginBottom: 40 }}>
-          <View style={{ width: 80, height: 80, backgroundColor: "#C9F31D", borderRadius: 24, alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
-            <Ionicons name="storefront" size={40} color="#000000" />
+        <View style={{ alignItems: "center", marginBottom: 32 }}>
+          {/* Placeholder for the illustration from the mockup */}
+          <View style={{ width: 120, height: 120, borderRadius: 60, backgroundColor: "#E9D5FF", alignItems: "center", justifyContent: "center", marginBottom: 24 }}>
+            <Ionicons name="sparkles" size={56} color={PURPLE} />
           </View>
-          <Text style={{ color: "#0F172A", fontSize: 28, fontWeight: "bold", letterSpacing: -0.5 }}>
-            Welcome back
+          <Text style={{ color: DARK_TEXT, fontSize: 32, fontWeight: "800", letterSpacing: -0.5, marginBottom: 8 }}>
+            Welcome Back
           </Text>
-          <Text style={{ color: "#64748B", fontSize: 15, marginTop: 8, textAlign: "center" }}>
-            Sign in to your Toyhourse account
+          <Text style={{ color: LIGHT_TEXT, fontSize: 16, textAlign: "center" }}>
+            Sign in to continue your beauty journey
           </Text>
         </View>
 
         {/* ERROR BANNER */}
         {error ? (
-          <View style={{ backgroundColor: "#FEF2F2", borderWidth: 1, borderColor: "#FECACA", borderRadius: 12, padding: 12, marginBottom: 16, flexDirection: "row", alignItems: "center", gap: 8 }}>
-            <Ionicons name="alert-circle" size={18} color="#EF4444" />
-            <Text style={{ color: "#EF4444", fontSize: 13, fontWeight: "600", flex: 1 }}>{error}</Text>
+          <View style={{ backgroundColor: "#FEF2F2", borderWidth: 1, borderColor: "#FECACA", borderRadius: 16, padding: 12, marginBottom: 24, flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <Ionicons name="alert-circle" size={20} color="#EF4444" />
+            <Text style={{ color: "#EF4444", fontSize: 14, fontWeight: "600", flex: 1 }}>{error}</Text>
           </View>
         ) : null}
 
         {/* FORM */}
-        <View style={{ gap: 16 }}>
+        <View style={{ gap: 20 }}>
           {/* Email */}
           <View>
-            <Text style={{ color: "#64748B", fontSize: 13, fontWeight: "600", marginBottom: 8, marginLeft: 4 }}>
-              Email address
-            </Text>
-            <View style={{ backgroundColor: "#FFFFFF", flexDirection: "row", alignItems: "center", paddingHorizontal: 16, borderRadius: 16, borderWidth: 1, borderColor: "#E2E8F0" }}>
-              <Ionicons name="mail-outline" size={20} color="#64748B" />
+            <View style={{ backgroundColor: "#FFFFFF", flexDirection: "row", alignItems: "center", paddingHorizontal: 16, borderRadius: 20, borderWidth: 1, borderColor: "#E5E7EB", height: 60 }}>
+              <Ionicons name="person-outline" size={22} color={LIGHT_TEXT} />
               <TextInput
-                style={{ flex: 1, marginLeft: 12, paddingVertical: 14, color: "#0F172A", fontSize: 15 }}
-                placeholder="you@example.com"
-                placeholderTextColor="#94A3B8"
+                style={{ flex: 1, marginLeft: 12, color: DARK_TEXT, fontSize: 16 }}
+                placeholder="Email address"
+                placeholderTextColor={LIGHT_TEXT}
                 value={email}
                 onChangeText={(t) => { setEmail(t); setError(""); }}
                 autoCapitalize="none"
@@ -101,90 +104,92 @@ const LoginScreen = () => {
 
           {/* Password */}
           <View>
-            <Text style={{ color: "#64748B", fontSize: 13, fontWeight: "600", marginBottom: 8, marginLeft: 4 }}>
-              Password
-            </Text>
-            <View style={{ backgroundColor: "#FFFFFF", flexDirection: "row", alignItems: "center", paddingHorizontal: 16, borderRadius: 16, borderWidth: 1, borderColor: "#E2E8F0" }}>
-              <Ionicons name="lock-closed-outline" size={20} color="#64748B" />
+            <View style={{ backgroundColor: "#FFFFFF", flexDirection: "row", alignItems: "center", paddingHorizontal: 16, borderRadius: 20, borderWidth: 1, borderColor: "#E5E7EB", height: 60 }}>
+              <Ionicons name="lock-closed-outline" size={22} color={LIGHT_TEXT} />
               <TextInput
-                style={{ flex: 1, marginLeft: 12, paddingVertical: 14, color: "#0F172A", fontSize: 15 }}
-                placeholder="Your password"
-                placeholderTextColor="#94A3B8"
+                style={{ flex: 1, marginLeft: 12, color: DARK_TEXT, fontSize: 16 }}
+                placeholder="Password"
+                placeholderTextColor={LIGHT_TEXT}
                 value={password}
                 onChangeText={(t) => { setPassword(t); setError(""); }}
                 secureTextEntry={!showPass}
                 returnKeyType="done"
                 onSubmitEditing={handleLogin}
               />
-              <TouchableOpacity onPress={() => setShowPass(!showPass)} activeOpacity={0.7}>
+              <TouchableOpacity onPress={() => setShowPass(!showPass)} activeOpacity={0.7} style={{ padding: 4 }}>
                 <Ionicons
                   name={showPass ? "eye-off-outline" : "eye-outline"}
-                  size={20}
-                  color="#64748B"
+                  size={22}
+                  color={LIGHT_TEXT}
                 />
               </TouchableOpacity>
             </View>
           </View>
 
+          <TouchableOpacity style={{ alignSelf: 'flex-end', marginTop: -8 }}>
+            <Text style={{ color: PURPLE, fontSize: 14, fontWeight: "600" }}>Forgot password?</Text>
+          </TouchableOpacity>
+
           {/* Sign In Button */}
           <TouchableOpacity
             style={{
-              backgroundColor: loading ? "#D8F753" : "#C9F31D",
-              borderRadius: 16,
-              paddingVertical: 16,
+              backgroundColor: PURPLE,
+              borderRadius: 24,
+              height: 60,
               alignItems: "center",
+              justifyContent: 'center',
               marginTop: 8,
-              opacity: loading ? 0.9 : 1,
+              opacity: loading ? 0.8 : 1,
             }}
             activeOpacity={0.8}
             onPress={handleLogin}
             disabled={loading}
           >
             {loading ? (
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <ActivityIndicator color="#000000" size="small" />
-                <Text style={{ color: "#000000", fontWeight: "700", fontSize: 15 }}>Signing in...</Text>
-              </View>
+              <ActivityIndicator color="#FFFFFF" size="small" />
             ) : (
-              <Text style={{ color: "#000000", fontWeight: "700", fontSize: 15 }}>Sign In</Text>
+              <Text style={{ color: "#FFFFFF", fontWeight: "700", fontSize: 18 }}>Log In</Text>
             )}
           </TouchableOpacity>
         </View>
 
-        {/* DIVIDER */}
-        <View style={{ flexDirection: "row", alignItems: "center", marginVertical: 24 }}>
-          <View style={{ flex: 1, height: 1, backgroundColor: "#E2E8F0" }} />
-          <Text style={{ color: "#94A3B8", fontSize: 13, marginHorizontal: 16 }}>Don't have an account?</Text>
-          <View style={{ flex: 1, height: 1, backgroundColor: "#E2E8F0" }} />
+        {/* OR DIVIDER */}
+        <View style={{ flexDirection: "row", alignItems: "center", marginVertical: 32 }}>
+          <View style={{ flex: 1, height: 1, backgroundColor: "#E5E7EB" }} />
+          <Text style={{ marginHorizontal: 16, color: LIGHT_TEXT, fontSize: 14, fontWeight: "500" }}>Or continue with</Text>
+          <View style={{ flex: 1, height: 1, backgroundColor: "#E5E7EB" }} />
         </View>
 
-        {/* REGISTER LINK */}
-        <TouchableOpacity
-          style={{ borderWidth: 1.5, borderColor: "#C9F31D", borderRadius: 16, paddingVertical: 16, alignItems: "center" }}
-          activeOpacity={0.8}
-          onPress={() => router.push("/register" as any)}
-        >
-          <Text style={{ color: "#000000", fontWeight: "700", fontSize: 15 }}>Create Account</Text>
-        </TouchableOpacity>
+        {/* SOCIAL LOGIN */}
+        <View style={{ flexDirection: "row", justifyContent: "center", gap: 16, marginBottom: 40 }}>
+          <TouchableOpacity style={{ width: 60, height: 60, borderRadius: 20, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#E5E7EB" }}>
+            <Ionicons name="logo-google" size={24} color="#DB4437" />
+          </TouchableOpacity>
+          <TouchableOpacity style={{ width: 60, height: 60, borderRadius: 20, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#E5E7EB" }}>
+            <Ionicons name="logo-apple" size={24} color="#000000" />
+          </TouchableOpacity>
+          <TouchableOpacity style={{ width: 60, height: 60, borderRadius: 20, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#E5E7EB" }}>
+            <Ionicons name="logo-facebook" size={24} color="#4267B2" />
+          </TouchableOpacity>
+        </View>
 
-        {/* CONTINUE AS GUEST */}
-        <TouchableOpacity
-          style={{ paddingVertical: 16, alignItems: "center", marginTop: 8 }}
-          activeOpacity={0.7}
+        {/* BOTTOM LINKS */}
+        <View style={{ flexDirection: "row", justifyContent: "center", gap: 4, marginTop: "auto" }}>
+          <Text style={{ color: LIGHT_TEXT, fontSize: 15 }}>Don't have an account?</Text>
+          <TouchableOpacity onPress={() => router.push("/(auth)/register")} activeOpacity={0.7}>
+            <Text style={{ color: PURPLE, fontWeight: "700", fontSize: 15 }}>Sign Up</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity 
+          style={{ alignItems: 'center', marginTop: 24, paddingBottom: 20 }}
           onPress={continueAsGuest}
         >
-          <Text style={{ color: "#64748B", fontSize: 14 }}>
-            Continue as{" "}
-            <Text style={{ color: "#0F172A", fontWeight: "600" }}>Guest</Text>
+          <Text style={{ color: LIGHT_TEXT, fontSize: 14, textDecorationLine: 'underline' }}>
+            Continue as guest
           </Text>
         </TouchableOpacity>
 
-        <Text style={{ textAlign: "center", color: "#94A3B8", fontSize: 12, lineHeight: 20, marginTop: 8, paddingHorizontal: 16 }}>
-          By signing in, you agree to our{" "}
-          <Text style={{ color: "#000000", fontWeight: "700" }}>Terms of Service</Text>
-          {" and "}
-          <Text style={{ color: "#000000", fontWeight: "700" }}>Privacy Policy</Text>
-        </Text>
       </ScrollView>
     </KeyboardAvoidingView>
   );

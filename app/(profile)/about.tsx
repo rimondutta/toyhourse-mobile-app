@@ -1,5 +1,6 @@
 import SafeScreen from "@/components/SafeScreen";
 import { View, Text, ScrollView, TouchableOpacity, Linking } from "react-native";
+import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
@@ -67,6 +68,19 @@ export default function AboutScreen() {
                 <Ionicons name="location" size={18} color="#00D9FF" />
               </View>
               <Text className="text-text-secondary text-base font-medium flex-1">Dhaka, Bangladesh</Text>
+            </View>
+          </View>
+          
+          <View className="items-center mb-8">
+            <View className="bg-surface rounded-full py-2 px-4 flex-row items-center shadow-sm border border-background-lighter">
+              <Image 
+                source={require('@/assets/developer/rimon-dutta.jpeg')} 
+                style={{ width: 32, height: 32, borderRadius: 16, marginRight: 12 }} 
+                contentFit="cover"
+              />
+              <Text className="text-text-primary font-bold text-sm">
+                Developed with <Ionicons name="heart" size={14} color="#EF4444" /> by Rimon Dutta
+              </Text>
             </View>
           </View>
           

@@ -3,6 +3,19 @@ import "../global.css";
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/context/AuthContext";
 import * as Sentry from "@sentry/react-native";
+import { LogBox } from "react-native";
+
+const originalWarn = console.warn;
+console.warn = (...args) => {
+  if (typeof args[0] === 'string' && args[0].includes('SafeAreaView has been deprecated')) {
+    return;
+  }
+  originalWarn(...args);
+};
+
+LogBox.ignoreLogs([
+  "SafeAreaView has been deprecated",
+]);
 
 
 Sentry.init({

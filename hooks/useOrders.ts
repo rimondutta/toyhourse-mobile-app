@@ -4,15 +4,16 @@ import { Order } from "@/types";
 import { useAuth } from "@/context/AuthContext";
 
 export const useOrders = () => {
-  const api = apiClient;
   const { user } = useAuth();
 
   return useQuery<Order[]>({
-    queryKey: ["orders"],
+    queryKey: ["orders", user?.id],
     queryFn: async () => {
-      const { data } = await api.get("/orders");
-      return data.orders;
+      // Bearer token is automatically attached by the global interceptor in api.ts
+      const { data } = await apiClient.get("/orders");
+      return data.orders ?? data.data ?? [];
     },
     enabled: !!user,
+    staleTime: 30_000,
   });
 };

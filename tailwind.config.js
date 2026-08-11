@@ -7,23 +7,23 @@ module.exports = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "#C9F31D", // Neon Lime
-          light: "#D8F753",
-          dark: "#A3C710",
+          DEFAULT: "#8B5CF6", // Vivid Purple
+          light: "#A78BFA",
+          dark: "#7C3AED",
         },
         background: {
-          DEFAULT: "#FFFFFF", // Pure White
+          DEFAULT: "#F9F5FF", // Very light lavender/off-white background
           light: "#FFFFFF",
-          lighter: "#F5F5F5",
+          lighter: "#F3E8FF",
         },
         surface: {
           DEFAULT: "#FFFFFF",
-          light: "#F5F5F5",
+          light: "#F5F3FF",
         },
         text: {
-          primary: "#000000", // Pure Black
-          secondary: "#666666",
-          tertiary: "#999999",
+          primary: "#1F2937",   // Dark grey
+          secondary: "#6B7280", // Medium grey
+          tertiary: "#9CA3AF",  // Light grey
         },
         accent: {
           DEFAULT: "#0EA5E9", // Sky Blue 500

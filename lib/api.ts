@@ -36,6 +36,25 @@ const apiClient: AxiosInstance = axios.create({
 });
 
 /**
+ * Global request interceptor — automatically attaches the Bearer token
+ * from SecureStore to every outgoing request. This fixes all 401 errors
+ * for orders, addresses, and any other authenticated endpoints without
+ * needing to manually pass headers in each hook.
+ */
+apiClient.interceptors.request.use(async (config) => {
+  try {
+    const token = await SecureStore.getItemAsync(SECURE_STORE_TOKEN_KEY);
+    if (token) {
+      config.headers = config.headers ?? {};
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+  } catch {
+    // SecureStore unavailable — proceed without auth header
+  }
+  return config;
+});
+
+/**
  * Attach Bearer token to any request that needs admin auth.
  * Call this at the top of admin-only request functions.
  */

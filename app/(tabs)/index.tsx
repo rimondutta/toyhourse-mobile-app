@@ -16,61 +16,41 @@ import {
   Image,
   ActivityIndicator,
   Dimensions,
-  Animated,
+  TextInput,
+  RefreshControl,
 } from 'react-native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// Hero banner slides data
+const PURPLE = '#8B5CF6';
+const LIGHT_PURPLE = '#F3E8FF';
+const DARK_TEXT = '#1F2937';
+const LIGHT_TEXT = '#9CA3AF';
+const BACKGROUND = '#F9F5FF';
+
+// Mock hero banners for beauty/skincare theme
 const HERO_SLIDES = [
   {
     id: '1',
-    title: 'Featured Deal',
-    subtitle: '20% off on selected toys',
-    tag: 'Limited Time',
-    bg: '#1E1B4B',
-    accent: '#818CF8',
+    title: '15% Off Today',
+    subtitle: 'Your Beauty Journey Starts Here',
+    bg: '#D8B4FE', // Soft purple
+    accent: '#581C87',
   },
   {
     id: '2',
     title: 'New Arrivals',
-    subtitle: 'Fresh toys just landed',
-    tag: 'New In',
-    bg: '#064E3B',
-    accent: '#6EE7B7',
-  },
-  {
-    id: '3',
-    title: 'Free Shipping',
-    subtitle: 'On orders above ৳1500',
-    tag: 'Today Only',
-    bg: '#7C2D12',
-    accent: '#FCA5A5',
+    subtitle: 'Discover Beauty Essentials',
+    bg: '#FBCFE8', // Soft pink
+    accent: '#831843',
   },
 ];
-
-// Countdown timer hook
-function useCountdown(durationMs: number) {
-  const [remaining, setRemaining] = useState(durationMs);
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setRemaining((prev) => (prev > 1000 ? prev - 1000 : 0));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const h = Math.floor(remaining / 3_600_000);
-  const m = Math.floor((remaining % 3_600_000) / 60_000);
-  const s = Math.floor((remaining % 60_000) / 1000);
-  return `${h}h ${m}m ${s}s`;
-}
 
 const ShopScreen = () => {
   const { user, isGuest } = useAuth();
   const [selectedSlug, setSelectedSlug] = useState<string | undefined>(undefined);
   const [heroIndex, setHeroIndex] = useState(0);
   const heroScroll = useRef<ScrollView>(null);
-  const countdown = useCountdown(10 * 3600_000 + 5 * 60_000 + 3_000);
 
   // Auto-advance hero
   useEffect(() => {
@@ -78,11 +58,11 @@ const ShopScreen = () => {
       const next = (heroIndex + 1) % HERO_SLIDES.length;
       setHeroIndex(next);
       heroScroll.current?.scrollTo({ x: next * (SCREEN_WIDTH - 48), animated: true });
-    }, 4000);
+    }, 5000);
     return () => clearInterval(t);
   }, [heroIndex]);
 
-  const { data: categories, isLoading: catLoading } = useCategories();
+  const { data: categories, isLoading: catLoading, refetch: refetchCategories } = useCategories();
 
   const queryParams: ProductsQueryParams = useMemo(() => {
     const params: ProductsQueryParams = { sort: 'newest', limit: 20 };
@@ -90,7 +70,14 @@ const ShopScreen = () => {
     return params;
   }, [selectedSlug]);
 
-  const { data: products, isLoading, isError } = useProducts(queryParams);
+  const { data: products, isLoading, isError, refetch: refetchProducts } = useProducts(queryParams);
+
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([refetchCategories(), refetchProducts()]);
+    setRefreshing(false);
+  };
 
   const greeting = isGuest ? 'Guest' : (user?.name?.split(' ')[0] ?? 'there');
   const firstLetter = greeting.charAt(0).toUpperCase();
@@ -98,47 +85,104 @@ const ShopScreen = () => {
   return (
     <SafeScreen>
       <ScrollView
-        className="flex-1 bg-background"
+        style={{ flex: 1, backgroundColor: BACKGROUND }}
         contentContainerStyle={{ paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={PURPLE} colors={[PURPLE]} />}
       >
         {/* ─── HEADER ─────────────────────────────────────── */}
-        <View className="flex-row items-center justify-between px-6 pt-4 pb-5">
-          {/* Avatar + Greeting */}
-          <View className="flex-row items-center gap-3">
-            <View className="w-11 h-11 rounded-full bg-primary items-center justify-center">
-              {user?.image ? (
-                <Image source={{ uri: user.image }} className="w-11 h-11 rounded-full" />
-              ) : (
-                <Text className="text-white font-bold text-base">{firstLetter}</Text>
-              )}
+        <View style={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 8 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+            {/* Avatar + Greeting */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: PURPLE, alignItems: 'center', justifyContent: 'center' }}>
+                {user?.image ? (
+                  <Image source={{ uri: user.image }} style={{ width: 44, height: 44, borderRadius: 22 }} />
+                ) : (
+                  <Text style={{ color: '#FFF', fontWeight: '700', fontSize: 16 }}>{firstLetter}</Text>
+                )}
+              </View>
+              <View>
+                <Text style={{ color: LIGHT_TEXT, fontSize: 13, fontWeight: '500' }}>Good Morning,</Text>
+                <Text style={{ color: DARK_TEXT, fontSize: 18, fontWeight: '700' }}>{greeting}</Text>
+              </View>
             </View>
-            <View>
-              <Text className="text-text-secondary text-xs">Good day 👋</Text>
-              <Text className="text-text-primary font-bold text-base">Hello, {greeting}</Text>
-            </View>
+
+            {/* Notification Icon */}
+            <TouchableOpacity
+              style={{ width: 44, height: 44, backgroundColor: '#FFFFFF', borderRadius: 22, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 }}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="notifications-outline" size={22} color={DARK_TEXT} />
+            </TouchableOpacity>
           </View>
 
-          {/* Icons */}
-          <View className="flex-row items-center gap-3">
-            <TouchableOpacity
-              onPress={() => router.push('/(tabs)/search')}
-              className="w-10 h-10 bg-surface rounded-full items-center justify-center shadow-sm shadow-black/5"
-              activeOpacity={0.7}
-            >
-              <Ionicons name="search-outline" size={20} color="#0F172A" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              className="w-10 h-10 bg-surface rounded-full items-center justify-center shadow-sm shadow-black/5"
-              activeOpacity={0.7}
-            >
-              <Ionicons name="notifications-outline" size={20} color="#0F172A" />
-            </TouchableOpacity>
-          </View>
+          {/* Search Bar */}
+          <TouchableOpacity
+            style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 24, paddingHorizontal: 20, height: 52, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 8, elevation: 2 }}
+            activeOpacity={1}
+            onPress={() => router.push('/(tabs)/search')}
+          >
+            <Ionicons name="search" size={20} color={LIGHT_TEXT} />
+            <Text style={{ marginLeft: 12, color: LIGHT_TEXT, fontSize: 15 }}>Find products...</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* ─── HERO BANNER CAROUSEL ───────────────────────── */}
-        <View className="px-6 mb-6">
+        {/* ─── CATEGORIES PILLS ───────────────────────────── */}
+        <View style={{ marginTop: 24, paddingLeft: 24 }}>
+          <Text style={{ fontSize: 18, fontWeight: '700', color: DARK_TEXT, marginBottom: 16 }}>
+            Explore Categories
+          </Text>
+          {catLoading ? (
+            <ActivityIndicator size="small" color={PURPLE} style={{ alignSelf: 'flex-start' }} />
+          ) : (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingRight: 24, gap: 12 }}
+            >
+              <TouchableOpacity
+                onPress={() => setSelectedSlug(undefined)}
+                activeOpacity={0.8}
+                style={{
+                  paddingHorizontal: 20, paddingVertical: 12,
+                  borderRadius: 20,
+                  backgroundColor: !selectedSlug ? PURPLE : '#FFFFFF',
+                  borderWidth: 1,
+                  borderColor: !selectedSlug ? PURPLE : '#F3F4F6',
+                }}
+              >
+                <Text style={{ fontSize: 14, fontWeight: '600', color: !selectedSlug ? '#FFFFFF' : DARK_TEXT }}>
+                  All
+                </Text>
+              </TouchableOpacity>
+              {categories?.map((c) => {
+                const isActive = selectedSlug === c.slug;
+                return (
+                  <TouchableOpacity
+                    key={c._id}
+                    onPress={() => setSelectedSlug(c.slug)}
+                    activeOpacity={0.8}
+                    style={{
+                      paddingHorizontal: 20, paddingVertical: 12,
+                      borderRadius: 20,
+                      backgroundColor: isActive ? PURPLE : '#FFFFFF',
+                      borderWidth: 1,
+                      borderColor: isActive ? PURPLE : '#F3F4F6',
+                    }}
+                  >
+                    <Text style={{ fontSize: 14, fontWeight: '600', color: isActive ? '#FFFFFF' : DARK_TEXT }}>
+                      {c.name}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          )}
+        </View>
+
+        {/* ─── HERO BANNER ────────────────────────────────── */}
+        <View style={{ marginTop: 32, paddingHorizontal: 24 }}>
           <ScrollView
             ref={heroScroll}
             horizontal
@@ -159,149 +203,57 @@ const ShopScreen = () => {
                   height: 160,
                   backgroundColor: slide.bg,
                   borderRadius: 24,
-                  padding: 20,
-                  justifyContent: 'space-between',
+                  padding: 24,
+                  justifyContent: 'center',
                 }}
               >
-                {/* Countdown Pill */}
-                <View
-                  style={{ backgroundColor: 'rgba(255,255,255,0.15)', alignSelf: 'flex-start' }}
-                  className="px-3 py-1.5 rounded-full"
-                >
-                  <Text className="text-white text-xs font-bold">{countdown}</Text>
-                </View>
-
-                {/* Text + Arrow */}
-                <View className="flex-row items-end justify-between">
-                  <View>
-                    <Text className="text-white text-xl font-bold mb-0.5">{slide.title}</Text>
-                    <Text style={{ color: slide.accent }} className="text-sm font-medium">
-                      {slide.subtitle}
-                    </Text>
-                  </View>
-                  <TouchableOpacity
-                    className="w-10 h-10 bg-white/20 rounded-full items-center justify-center"
-                    activeOpacity={0.8}
-                  >
-                    <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
-                  </TouchableOpacity>
-                </View>
-
-                {/* Tag badge */}
-                <View
-                  style={{ position: 'absolute', top: 20, right: 20, backgroundColor: slide.accent + '33' }}
-                  className="px-3 py-1 rounded-full"
-                >
-                  <Text style={{ color: slide.accent }} className="text-xs font-bold">
-                    {slide.tag}
-                  </Text>
-                </View>
+                <Text style={{ color: slide.accent, fontSize: 24, fontWeight: '800', marginBottom: 8 }}>{slide.title}</Text>
+                <Text style={{ color: slide.accent, fontSize: 15, opacity: 0.8, marginBottom: 16 }}>
+                  {slide.subtitle}
+                </Text>
+                <TouchableOpacity style={{ backgroundColor: '#FFFFFF', alignSelf: 'flex-start', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 }}>
+                  <Text style={{ color: slide.accent, fontWeight: '700', fontSize: 13 }}>Shop Now</Text>
+                </TouchableOpacity>
               </View>
             ))}
           </ScrollView>
 
-          {/* Dot Indicators */}
-          <View className="flex-row justify-center gap-2 mt-3">
+          {/* Dots */}
+          <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 6, marginTop: 12 }}>
             {HERO_SLIDES.map((_, i) => (
               <View
                 key={i}
                 style={{
-                  height: 6,
                   width: i === heroIndex ? 20 : 6,
+                  height: 6,
                   borderRadius: 3,
-                  backgroundColor: i === heroIndex ? '#C9F31D' : '#CBD5E1',
+                  backgroundColor: i === heroIndex ? PURPLE : '#D8B4FE',
                 }}
               />
             ))}
           </View>
         </View>
 
-        {/* ─── CATEGORIES ─────────────────────────────────── */}
-        <View className="mb-6">
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 24, gap: 16 }}
-          >
-            {/* All */}
-            <TouchableOpacity
-              onPress={() => setSelectedSlug(undefined)}
-              className="items-center gap-2"
-              activeOpacity={0.8}
-            >
-              <View
-                className={`w-16 h-16 rounded-full items-center justify-center shadow-sm ${
-                  !selectedSlug ? 'bg-primary' : 'bg-surface'
-                }`}
-                style={{ shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8 }}
-              >
-                <Ionicons name="grid" size={26} color={!selectedSlug ? '#000000' : '#C9F31D'} />
-              </View>
-              <Text
-                className={`text-xs font-semibold ${
-                  !selectedSlug ? 'text-primary' : 'text-text-secondary'
-                }`}
-              >
-                All
-              </Text>
-            </TouchableOpacity>
-
-            {/* Dynamic */}
-            {catLoading ? (
-              <View className="w-16 h-16 rounded-full bg-surface items-center justify-center">
-                <ActivityIndicator size="small" color="#C9F31D" />
-              </View>
-            ) : (
-              categories?.map((cat) => {
-                const isSelected = selectedSlug === cat.slug;
-                return (
-                  <TouchableOpacity
-                    key={cat._id}
-                    onPress={() => setSelectedSlug(isSelected ? undefined : cat.slug)}
-                    className="items-center gap-2"
-                    activeOpacity={0.8}
-                  >
-                    <View
-                      className={`w-16 h-16 rounded-full items-center justify-center overflow-hidden ${
-                        isSelected ? 'bg-primary' : 'bg-surface'
-                      }`}
-                      style={{ shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8 }}
-                    >
-                      {cat.image ? (
-                        <Image source={{ uri: cat.image }} style={{ width: 40, height: 40 }} resizeMode="contain" />
-                      ) : (
-                        <Ionicons name="pricetag" size={24} color={isSelected ? '#000000' : '#C9F31D'} />
-                      )}
-                    </View>
-                    <Text
-                      className={`text-xs font-semibold ${
-                        isSelected ? 'text-primary' : 'text-text-secondary'
-                      }`}
-                      numberOfLines={1}
-                    >
-                      {cat.name}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })
-            )}
-          </ScrollView>
-        </View>
-
-        {/* ─── FEATURED PRODUCTS ──────────────────────────── */}
-        <View className="px-6">
-          <View className="flex-row items-center justify-between mb-4">
-            <Text className="text-text-primary text-lg font-bold">Featured products</Text>
-            <TouchableOpacity activeOpacity={0.7}>
-              <Text className="text-primary text-sm font-semibold">View All</Text>
+        {/* ─── POPULAR COLLECTION & GRID ──────────────────── */}
+        <View style={{ marginTop: 32, paddingHorizontal: 24 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <Text style={{ fontSize: 18, fontWeight: '700', color: DARK_TEXT }}>
+              Popular Collection
+            </Text>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/search')}>
+              <Text style={{ color: PURPLE, fontSize: 14, fontWeight: '600' }}>See all</Text>
             </TouchableOpacity>
           </View>
 
-          <ProductsGrid
-            products={products ?? []}
-            isLoading={isLoading}
-            isError={isError}
-          />
+          {isLoading ? (
+            <ActivityIndicator size="large" color={PURPLE} style={{ marginTop: 20 }} />
+          ) : isError ? (
+            <Text style={{ textAlign: 'center', marginTop: 20, color: '#EF4444' }}>
+              Failed to load products.
+            </Text>
+          ) : (
+            <ProductsGrid products={products ?? []} />
+          )}
         </View>
       </ScrollView>
     </SafeScreen>

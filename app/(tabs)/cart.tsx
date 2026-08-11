@@ -11,7 +11,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import OrderSummary from "@/components/OrderSummary";
-import AddressSelectionModal from "@/components/AddressSelectionModal";
 import { useAuth } from "@/context/AuthContext";
 
 import * as Sentry from "@sentry/react-native";
@@ -24,7 +23,6 @@ const CartScreen = () => {
 
 
   const [paymentLoading, setPaymentLoading] = useState(false);
-  const [addressModalVisible, setAddressModalVisible] = useState(false);
 
   // Coupon state
   const [couponCode, setCouponCode] = useState("");
@@ -34,7 +32,7 @@ const CartScreen = () => {
 
   const cartItems = cart?.items || [];
   const subtotal = cartTotal;
-  const shipping = 10.0; // $10 shipping fee
+  const shipping = 10.0; // ৳10 shipping fee
   const tax = subtotal * 0.08; // 8% tax
   
   // Calculate discount amount based on backend response
@@ -91,75 +89,7 @@ const CartScreen = () => {
 
   const handleCheckout = () => {
     if (cartItems.length === 0) return;
-
-    // We will handle guests and empty addresses inside AddressSelectionModal
-
-    // show address selection modal
-    setAddressModalVisible(true);
-  };
-
-  const handleProceedWithPayment = async (selectedAddress: Address) => {
-    setAddressModalVisible(false);
-
-    Sentry.logger.info("Checkout initiated (COD)", {
-      itemCount: cartItemCount,
-      total: total.toFixed(2),
-      city: selectedAddress.city,
-    });
-
-    try {
-      setPaymentLoading(true);
-
-      const orderItems = cartItems.map((item) => ({
-        product: item.product._id, // Used by mongoose schema
-        productId: item.product._id, // Used by bulkWrite logic
-        quantity: item.quantity,
-        price: item.product.price,
-        title: item.product.title,
-      }));
-
-      const { data } = await api.post("/store/orders", {
-        customerName: selectedAddress.fullName,
-        customerEmail: user?.email || "guest@example.com",
-        items: orderItems,
-        totalAmount: total,
-        shippingCost: shipping,
-        discountAmount: discountAmount,
-        couponCode: couponCode || undefined,
-        shippingAddress: {
-          addressLine1: selectedAddress.streetAddress,
-          city: selectedAddress.city,
-          state: selectedAddress.state,
-          postcode: selectedAddress.zipCode,
-          phone: selectedAddress.phoneNumber,
-        },
-        paymentMethod: "cod",
-      });
-
-      if (data.success) {
-        Sentry.logger.info("Order successful", {
-          total: total.toFixed(2),
-          itemCount: cartItems.length,
-        });
-
-        Alert.alert("Success", "Your order has been placed successfully via Cash on Delivery!", [
-          { text: "OK", onPress: () => {} },
-        ]);
-        clearCart();
-      } else {
-        throw new Error(data.error || "Failed to create order");
-      }
-    } catch (error: any) {
-      Sentry.logger.error("Order failed", {
-        error: error instanceof Error ? error.message : "Unknown error",
-        cartTotal: total,
-        itemCount: cartItems.length,
-      });
-
-      Alert.alert("Error", error?.response?.data?.error || "Failed to process order");
-    } finally {
-      setPaymentLoading(false);
-    }
+    router.push("/checkout");
   };
 
   if (isLoading) return <LoadingUI />;
@@ -202,10 +132,10 @@ const CartScreen = () => {
                     </Text>
                     <View className="flex-row items-center mt-2">
                       <Text className="text-primary font-bold text-2xl">
-                        ${(item.product.price * item.quantity).toFixed(2)}
+                        ৳{(item.product.price * item.quantity).toFixed(2)}
                       </Text>
                       <Text className="text-text-secondary text-sm ml-2">
-                        ${item.product.price.toFixed(2)} each
+                        ৳{item.product.price.toFixed(2)} each
                       </Text>
                     </View>
                   </View>
@@ -332,7 +262,7 @@ const CartScreen = () => {
             </Text>
           </View>
           <View className="flex-row items-center">
-            <Text className="text-text-primary font-bold text-xl">${total.toFixed(2)}</Text>
+            <Text className="text-text-primary font-bold text-xl">৳{total.toFixed(2)}</Text>
           </View>
         </View>
 
@@ -355,13 +285,6 @@ const CartScreen = () => {
           </View>
         </TouchableOpacity>
       </View>
-
-      <AddressSelectionModal
-        visible={addressModalVisible}
-        onClose={() => setAddressModalVisible(false)}
-        onProceed={handleProceedWithPayment}
-        isProcessing={paymentLoading}
-      />
     </SafeScreen>
   );
 };
