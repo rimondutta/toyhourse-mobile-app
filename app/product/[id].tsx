@@ -197,7 +197,7 @@ const ProductDetailScreen = () => {
 
           {/* Out of stock overlay */}
           {!inStock && (
-            <View style={{ position: 'absolute', top: insets.top + 20, left: 24 }}>
+            <View style={{ position: 'absolute', top: insets.top > 0 ? insets.top + 60 : 72, left: 24 }}>
               <View style={{ backgroundColor: '#EF4444', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 }}>
                 <Text style={{ color: '#FFF', fontWeight: '700', fontSize: 12, letterSpacing: 0.5 }}>SOLD OUT</Text>
               </View>
@@ -206,7 +206,7 @@ const ProductDetailScreen = () => {
 
           {/* Discount badge */}
           {hasDiscount && inStock && (
-            <View style={{ position: 'absolute', top: insets.top + 20, left: 24 }}>
+            <View style={{ position: 'absolute', top: insets.top > 0 ? insets.top + 60 : 72, left: 24 }}>
               <View style={{ backgroundColor: LIGHT_PURPLE, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 }}>
                 <Text style={{ color: PURPLE, fontWeight: '700', fontSize: 12, letterSpacing: 0.5 }}>−{discountPct}% OFF</Text>
               </View>

@@ -5,16 +5,31 @@ import { AuthProvider } from "@/context/AuthContext";
 import * as Sentry from "@sentry/react-native";
 import { LogBox } from "react-native";
 
+const filterWarning = (...args: any[]) => {
+  const msg = args.map(a => (a instanceof Error ? a.message : String(a))).join(' ');
+  return msg.includes('SafeAreaView has been deprecated');
+};
+
 const originalWarn = console.warn;
 console.warn = (...args) => {
-  if (typeof args[0] === 'string' && args[0].includes('SafeAreaView has been deprecated')) {
-    return;
-  }
+  if (filterWarning(...args)) return;
   originalWarn(...args);
 };
 
+const originalError = console.error;
+console.error = (...args) => {
+  if (filterWarning(...args)) return;
+  originalError(...args);
+};
+
+const originalLog = console.log;
+console.log = (...args) => {
+  if (filterWarning(...args)) return;
+  originalLog(...args);
+};
+
 LogBox.ignoreLogs([
-  "SafeAreaView has been deprecated",
+  /SafeAreaView has been deprecated/,
 ]);
 
 

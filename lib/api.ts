@@ -214,6 +214,6 @@ export async function updateProfile(
     { headers }
   );
   return data;
-}
+};
 
 export default apiClient;

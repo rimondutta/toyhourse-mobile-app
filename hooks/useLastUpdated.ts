@@ -3,7 +3,7 @@ import { AppState, AppStateStatus } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import { getLastUpdated } from '@/lib/api';
 
-const POLL_INTERVAL_MS = 30_000; // 30 seconds
+const POLL_INTERVAL_MS = 5 * 60_000; // 5 minutes — safe for Vercel Hobby plan
 
 /**
  * useLastUpdated
