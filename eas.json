@@ -16,7 +16,7 @@
       "env": {
         "EXPO_PUBLIC_API_URL": "https://toyhourse.vercel.app/api"
       },
-      "node": "20.x"
+      "node": "20"
     },
     "preview": {
       "distribution": "internal",
@@ -26,7 +26,7 @@
       "env": {
         "EXPO_PUBLIC_API_URL": "https://toyhourse.vercel.app/api"
       },
-      "node": "20.x"
+      "node": "20"
     },
     "production": {
       "distribution": "store",
@@ -36,7 +36,7 @@
       "env": {
         "EXPO_PUBLIC_API_URL": "https://toyhourse.vercel.app/api"
       },
-      "node": "20.x"
+      "node": "20"
     }
   },
   "submit": {
