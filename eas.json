@@ -1,4 +1,4 @@
-﻿{
+{
   "cli": {
     "version": ">= 10.0.0",
     "appVersionSource": "local"
@@ -15,7 +15,8 @@
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://toyhourse.vercel.app/api"
-      }
+      },
+      "node": "20.x"
     },
     "preview": {
       "distribution": "internal",
@@ -24,7 +25,8 @@
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://toyhourse.vercel.app/api"
-      }
+      },
+      "node": "20.x"
     },
     "production": {
       "distribution": "store",
@@ -33,7 +35,8 @@
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://toyhourse.vercel.app/api"
-      }
+      },
+      "node": "20.x"
     }
   },
   "submit": {
