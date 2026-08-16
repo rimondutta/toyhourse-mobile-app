@@ -9,6 +9,12 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "owner": "rimondutta",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/c8645cd8-b00f-4115-83d4-ba0d0f780af9"
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.toyhourse.app"
