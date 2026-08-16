@@ -8,6 +8,7 @@
     "scheme": "mobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "owner": "rimondutta",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.toyhourse.app"
@@ -63,6 +64,11 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c8645cd8-b00f-4115-83d4-ba0d0f780af9"
+      }
     }
   }
 }
