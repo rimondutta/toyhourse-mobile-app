@@ -8,6 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useMemo, useState, useEffect, useRef } from 'react';
+import {
   View,
   Text,
   ScrollView,

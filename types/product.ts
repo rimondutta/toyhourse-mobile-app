@@ -207,12 +207,16 @@ export function getEffectiveImages(
   selectedVariant?: ProductVariant | null
 ): string[] {
   if (
-    product.hasVariations &&
+    product?.hasVariations &&
     selectedVariant &&
+    selectedVariant.images &&
     selectedVariant.images.length > 0
   ) {
-    return selectedVariant.images;
+    return selectedVariant.images.filter(Boolean);
   }
-  // Fall back to product-level images (extract url from { url, alt })
-  return product.images.map((img) => img.url).filter(Boolean);
+  // Fall back to product-level images (extract url from { url, alt } or plain string)
+  if (!product?.images || !Array.isArray(product.images)) return [];
+  return product.images
+    .map((img: any) => (typeof img === 'string' ? img : img?.url))
+    .filter(Boolean);
 }

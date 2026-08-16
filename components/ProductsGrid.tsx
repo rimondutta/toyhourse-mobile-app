@@ -16,12 +16,12 @@ import { Image } from 'expo-image';
 import { optimizeCloudinaryUrl } from '@/lib/utils';
 
 interface ProductsGridProps {
-  isLoading: boolean;
-  isError: boolean;
+  isLoading?: boolean;
+  isError?: boolean;
   products: Product[];
 }
 
-const ProductsGrid = ({ products, isLoading, isError }: ProductsGridProps) => {
+const ProductsGrid = ({ products, isLoading = false, isError = false }: ProductsGridProps) => {
   const { isInWishlist, toggleWishlist, isAddingToWishlist, isRemovingFromWishlist } =
     useWishlist();
 
@@ -52,12 +52,12 @@ const ProductsGrid = ({ products, isLoading, isError }: ProductsGridProps) => {
           {firstImage ? (
             <Image
               source={{ uri: firstImage }}
-              className="w-full h-44 rounded-2xl bg-background-lighter"
+              style={{ width: '100%', height: 176, borderRadius: 16, backgroundColor: '#F1F5F9' }}
               contentFit="cover"
               transition={200}
             />
           ) : (
-            <View className="w-full h-44 rounded-2xl bg-background-lighter items-center justify-center">
+            <View style={{ width: '100%', height: 176, borderRadius: 16, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' }}>
               <Ionicons name="image-outline" size={36} color="#94A3B8" />
             </View>
           )}
