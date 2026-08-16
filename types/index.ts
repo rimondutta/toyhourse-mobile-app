@@ -41,35 +41,44 @@ export interface Address {
 // Order
 // ─────────────────────────────────────────────────────────────
 
+// ─────────────────────────────────────────────────────────────
+// Order  (matches /api/store/orders/user response exactly)
+// ─────────────────────────────────────────────────────────────
+
 export interface OrderItem {
   _id: string;
-  product: Product;
-  name: string;
+  product: string;    // product ObjectId
+  productId: string;
+  title: string;
   price: number;
   quantity: number;
-  image: string;
 }
+
+export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
+export type FulfillmentStatus = 'unfulfilled' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+export type PaymentMethod = 'cod' | 'bkash' | 'card';
 
 export interface Order {
   _id: string;
-  user: string;
-  clerkId: string;
-  orderItems: OrderItem[];
+  customerName: string;
+  customerEmail?: string;
+  items: OrderItem[];
+  totalAmount: number;
+  shippingCost: number;
+  shippingZone?: string;
   shippingAddress: {
-    fullName: string;
-    streetAddress: string;
+    addressLine1: string;
     city: string;
-    state: string;
-    zipCode: string;
-    phoneNumber: string;
+    postcode?: string;
+    phone: string;
+    country?: string;
   };
-  paymentResult: {
-    id: string;
-    status: string;
-  };
-  totalPrice: number;
-  status: "pending" | "shipped" | "delivered";
-  hasReviewed: boolean;
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
+  fulfillmentStatus: FulfillmentStatus;
+  notes?: string;
+  invoiceNumber?: string;
+  invoiceUrl?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -18,6 +18,7 @@ import useCart from "@/hooks/useCart";
 import useWishlist from "@/hooks/useWishlist";
 import * as ImagePicker from "expo-image-picker";
 import { Alert } from "react-native";
+import { optimizeCloudinaryUrl } from "@/lib/utils";
 
 const PURPLE = '#8B5CF6';
 const LIGHT_PURPLE = '#F3E8FF';
@@ -202,9 +203,10 @@ export default function SearchScreen() {
               >
                 <View style={{ padding: 8 }}>
                   <Image
-                    source={{ uri: item.images?.[0]?.url }}
+                    source={{ uri: optimizeCloudinaryUrl(item.images?.[0]?.url, 400) }}
                     style={{ height: 160, width: "100%", borderRadius: 16, backgroundColor: BACKGROUND }}
                     contentFit="cover"
+                    transition={200}
                   />
                   <TouchableOpacity
                     style={{ position: 'absolute', top: 16, right: 16, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 20, padding: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2 }}

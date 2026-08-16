@@ -6,6 +6,7 @@ import { Image } from "expo-image";
 import { router } from "expo-router";
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import type { Product } from "@/types";
+import { optimizeCloudinaryUrl } from "@/lib/utils";
 
 
 function WishlistScreen() {
@@ -80,8 +81,10 @@ function WishlistScreen() {
               >
                 <View className="flex-row p-4">
                   <Image
-                    source={{ uri: item.images?.[0]?.url }}
+                    source={{ uri: optimizeCloudinaryUrl(item.images?.[0]?.url, 200) }}
                     className="rounded-2xl bg-background-lighter"
+                    contentFit="cover"
+                    transition={200}
                     style={{ width: 96, height: 96, borderRadius: 8 }}
                   />
 

@@ -8,17 +8,17 @@ import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useMemo, useState, useEffect, useRef } from 'react';
-import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
-  Image,
   ActivityIndicator,
   Dimensions,
   TextInput,
   RefreshControl,
 } from 'react-native';
+import { Image } from 'expo-image';
+import { optimizeCloudinaryUrl } from '@/lib/utils';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -97,7 +97,12 @@ const ShopScreen = () => {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
               <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: PURPLE, alignItems: 'center', justifyContent: 'center' }}>
                 {user?.image ? (
-                  <Image source={{ uri: user.image }} style={{ width: 44, height: 44, borderRadius: 22 }} />
+                  <Image 
+                    source={{ uri: optimizeCloudinaryUrl(user.image, 100) }} 
+                    style={{ width: 44, height: 44, borderRadius: 22 }} 
+                    contentFit="cover"
+                    transition={200}
+                  />
                 ) : (
                   <Text style={{ color: '#FFF', fontWeight: '700', fontSize: 16 }}>{firstLetter}</Text>
                 )}

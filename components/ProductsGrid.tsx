@@ -9,10 +9,11 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
-  Image,
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { Image } from 'expo-image';
+import { optimizeCloudinaryUrl } from '@/lib/utils';
 
 interface ProductsGridProps {
   isLoading: boolean;
@@ -34,7 +35,7 @@ const ProductsGrid = ({ products, isLoading, isError }: ProductsGridProps) => {
   const renderProduct = ({ item: product }: { item: Product }) => {
     // Pick the first display image — handles both variation products and plain products
     const images = getEffectiveImages(product);
-    const firstImage = images[0];
+    const firstImage = optimizeCloudinaryUrl(images[0], 400); // 400px width is plenty for a grid item
 
     // Category name — category is now a populated object
     const categoryName =
@@ -52,7 +53,8 @@ const ProductsGrid = ({ products, isLoading, isError }: ProductsGridProps) => {
             <Image
               source={{ uri: firstImage }}
               className="w-full h-44 rounded-2xl bg-background-lighter"
-              resizeMode="cover"
+              contentFit="cover"
+              transition={200}
             />
           ) : (
             <View className="w-full h-44 rounded-2xl bg-background-lighter items-center justify-center">

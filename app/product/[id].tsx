@@ -9,6 +9,7 @@ import {
   getEffectivePrice,
   getEffectiveStock,
 } from '@/types/product';
+import { optimizeCloudinaryUrl } from '@/lib/utils';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -169,7 +170,12 @@ const ProductDetailScreen = () => {
           {/* Main Image */}
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
             {displayImages.length > 0 ? (
-              <Image source={{ uri: displayImages[selectedImageIndex] }} style={{ width: '90%', height: '90%' }} contentFit="contain" />
+              <Image 
+                source={{ uri: optimizeCloudinaryUrl(displayImages[selectedImageIndex], 800) }} 
+                style={{ width: '90%', height: '90%' }} 
+                contentFit="contain" 
+                transition={200}
+              />
             ) : (
               <Ionicons name="image-outline" size={64} color={LIGHT_PURPLE} />
             )}
@@ -189,7 +195,12 @@ const ProductDetailScreen = () => {
                   }}
                   activeOpacity={0.8}
                 >
-                  <Image source={{ uri: img }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
+                  <Image 
+                    source={{ uri: optimizeCloudinaryUrl(img, 200) }} 
+                    style={{ width: '100%', height: '100%' }} 
+                    contentFit="cover" 
+                    transition={200}
+                  />
                 </TouchableOpacity>
               ))}
             </View>

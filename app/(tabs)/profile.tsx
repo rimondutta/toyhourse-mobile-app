@@ -1,5 +1,6 @@
 import SafeScreen from "@/components/SafeScreen";
 import { useAuth } from "@/context/AuthContext";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 import { ScrollView, Text, TouchableOpacity, View, RefreshControl } from "react-native";
 import { Image } from "expo-image";
@@ -22,6 +23,7 @@ const MENU_ITEMS = [
 
 const ProfileScreen = () => {
   const { signOut, user, refreshUser } = useAuth();
+  const { unreadCount } = usePushNotifications();
   const [localImage, setLocalImage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -193,14 +195,37 @@ const ProfileScreen = () => {
           ))}
         </View>
 
-        {/* NOTIFICATONS BTN */}
+        {/* NOTIFICATIONS BTN */}
         <View className="mb-3 mx-6 bg-surface rounded-2xl p-4">
           <TouchableOpacity
             className="flex-row items-center justify-between py-2"
             activeOpacity={0.7}
+            onPress={() => router.push("/notifications" as any)}
           >
             <View className="flex-row items-center">
-              <Ionicons name="notifications-outline" size={22} color="#0F172A" />
+              <View style={{ position: 'relative' }}>
+                <Ionicons name="notifications-outline" size={22} color="#0F172A" />
+                {unreadCount > 0 && (
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: -4,
+                      right: -6,
+                      backgroundColor: '#EF4444',
+                      borderRadius: 8,
+                      minWidth: 16,
+                      height: 16,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      paddingHorizontal: 3,
+                    }}
+                  >
+                    <Text style={{ color: '#FFF', fontSize: 9, fontWeight: '800' }}>
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </Text>
+                  </View>
+                )}
+              </View>
               <Text className="text-text-primary font-semibold ml-3">Notifications</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#64748B" />

@@ -63,11 +63,17 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 // Provider
 // ─────────────────────────────────────────────────────────────
 
+import { usePushNotifications } from '@/hooks/usePushNotifications';
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isGuest, setIsGuest] = useState(false);
+
+  // Hook for push notifications — only the token is needed here for backend registration.
+  // The full notification history is consumed directly via usePushNotifications() on the Notifications screen.
+  const { expoPushToken } = usePushNotifications();
 
   // On mount: read saved token and validate it
   useEffect(() => {
@@ -92,6 +98,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     })();
   }, []);
+
+  // Register push token with backend when user is signed in and token is available
+  useEffect(() => {
+    if (token && expoPushToken && user) {
+      fetch(`${process.env.EXPO_PUBLIC_API_URL ?? 'https://toyhourse.vercel.app/api'}/mobile/push-token`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ token: expoPushToken }),
+      }).catch(err => console.error('Failed to register push token:', err));
+    }
+  }, [token, expoPushToken, user]);
 
   const signIn = useCallback(async (email: string, password: string) => {
     const res = await apiLogin(email, password);

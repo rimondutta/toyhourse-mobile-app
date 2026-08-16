@@ -5,7 +5,7 @@ import { useReviews } from "@/hooks/useReviews";
 import { capitalizeFirstLetter, formatDate, getStatusColor } from "@/lib/utils";
 import { Order } from "@/types";
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
+
 import { router } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View, RefreshControl } from "react-native";
@@ -29,11 +29,10 @@ function OrdersScreen() {
     setShowRatingModal(true);
     setSelectedOrder(order);
 
-    // init ratings for all product to 0 - resettin the state for each product
+    // init ratings for all items to 0
     const initialRatings: { [key: string]: number } = {};
-    order.orderItems.forEach((item) => {
-      const productId = item.product._id;
-      initialRatings[productId] = 0;
+    order.items.forEach((item) => {
+      initialRatings[item.productId] = 0;
     });
     setProductRatings(initialRatings);
   };
@@ -50,11 +49,11 @@ function OrdersScreen() {
 
     try {
       await Promise.all(
-        selectedOrder.orderItems.map((item) => {
+        selectedOrder.items.map((item) => {
           createReviewAsync({
-            productId: item.product._id,
+            productId: item.productId,
             orderId: selectedOrder._id,
-            rating: productRatings[item.product._id],
+            rating: productRatings[item.productId],
           });
         })
       );
@@ -93,24 +92,24 @@ function OrdersScreen() {
         >
           <View className="px-6 py-4">
             {orders.map((order) => {
-              const totalItems = order.orderItems.reduce((sum, item) => sum + item.quantity, 0);
-              const firstImage = order.orderItems[0]?.image || "";
+              const totalItems = order.items.reduce((sum, item) => sum + item.quantity, 0);
+              // items only have productId; no image — show placeholder
+              const statusLabel = order.fulfillmentStatus;
 
               return (
                 <View key={order._id} className="bg-surface rounded-3xl p-5 mb-4">
                   <View className="flex-row mb-4">
                     <View className="relative">
-                      <Image
-                        source={firstImage}
-                        style={{ height: 80, width: 80, borderRadius: 8 }}
-                        contentFit="cover"
-                      />
+                      {/* No product image in order items — show icon placeholder */}
+                      <View style={{ height: 80, width: 80, borderRadius: 8, backgroundColor: '#F3E8FF', alignItems: 'center', justifyContent: 'center' }}>
+                        <Ionicons name="cube-outline" size={36} color="#8B5CF6" />
+                      </View>
 
                       {/* BADGE FOR MORE ITEMS */}
-                      {order.orderItems.length > 1 && (
+                      {order.items.length > 1 && (
                         <View className="absolute -bottom-1 -right-1 bg-primary rounded-full size-7 items-center justify-center">
                           <Text className="text-background text-xs font-bold">
-                            +{order.orderItems.length - 1}
+                            +{order.items.length - 1}
                           </Text>
                         </View>
                       )}
@@ -125,26 +124,26 @@ function OrdersScreen() {
                       </Text>
                       <View
                         className="self-start px-3 py-1.5 rounded-full"
-                        style={{ backgroundColor: getStatusColor(order.status) + "20" }}
+                        style={{ backgroundColor: getStatusColor(statusLabel) + "20" }}
                       >
                         <Text
                           className="text-xs font-bold"
-                          style={{ color: getStatusColor(order.status) }}
+                          style={{ color: getStatusColor(statusLabel) }}
                         >
-                          {capitalizeFirstLetter(order.status)}
+                          {capitalizeFirstLetter(statusLabel)}
                         </Text>
                       </View>
                     </View>
                   </View>
 
                   {/* ORDER ITEMS SUMMARY */}
-                  {order.orderItems.map((item, index) => (
+                  {order.items.map((item) => (
                     <Text
                       key={item._id}
                       className="text-text-secondary text-sm flex-1"
                       numberOfLines={1}
                     >
-                      {item.name} × {item.quantity}
+                      {item.title} × {item.quantity}
                     </Text>
                   ))}
 
@@ -152,29 +151,24 @@ function OrdersScreen() {
                     <View>
                       <Text className="text-text-secondary text-xs mb-1">{totalItems} items</Text>
                       <Text className="text-primary font-bold text-xl">
-                        ৳{order.totalPrice.toFixed(2)}
+                        ৳{order.totalAmount.toFixed(2)}
                       </Text>
                     </View>
 
-                    {order.status === "delivered" &&
-                      (order.hasReviewed ? (
-                        <View className="bg-primary/20 px-5 py-3 rounded-full flex-row items-center">
-                          <Ionicons name="checkmark-circle" size={18} color="#4F46E5" />
-                          <Text className="text-primary font-bold text-sm ml-2">Reviewed</Text>
-                        </View>
-                      ) : (
-                        <TouchableOpacity
-                          className="bg-primary px-5 py-3 rounded-full flex-row items-center"
-                          activeOpacity={0.7}
-                          onPress={() => handleOpenRating(order)}
-                        >
-                          <Ionicons name="star" size={18} color="#0F172A" />
-                          <Text className="text-background font-bold text-sm ml-2">
-                            Leave Rating
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
+                    {order.fulfillmentStatus === "delivered" && (
+                      <TouchableOpacity
+                        className="bg-primary px-5 py-3 rounded-full flex-row items-center"
+                        activeOpacity={0.7}
+                        onPress={() => handleOpenRating(order)}
+                      >
+                        <Ionicons name="star" size={18} color="#0F172A" />
+                        <Text className="text-background font-bold text-sm ml-2">
+                          Leave Rating
+                        </Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
+
                 </View>
               );
             })}

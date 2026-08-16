@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { getProducts } from '@/lib/api';
 import type { Product, ProductsQueryParams } from '@/types/product';
 
@@ -15,9 +15,10 @@ const useProducts = (params: ProductsQueryParams = {}) => {
       if (!res.success) throw new Error(res.error ?? 'Failed to fetch products');
       return res.data;
     },
-    // Keep data fresh — products change when admin edits them.
-    // The useLastUpdated hook handles proactive invalidation.
-    staleTime: 30_000, // 30 seconds
+    // Keep previous data when changing params (e.g. changing category) to prevent flickering
+    placeholderData: keepPreviousData,
+    // Keep data fresh longer — useLastUpdated handles proactive invalidation
+    staleTime: 300_000, // 5 minutes
   });
 };
 

@@ -12,6 +12,7 @@ import { Image } from "expo-image";
 import { router } from "expo-router";
 import OrderSummary from "@/components/OrderSummary";
 import { useAuth } from "@/context/AuthContext";
+import { optimizeCloudinaryUrl } from "@/lib/utils";
 
 import * as Sentry from "@sentry/react-native";
 
@@ -112,9 +113,10 @@ const CartScreen = () => {
                 {/* product image */}
                 <View className="relative">
                   <Image
-                    source={{ uri: item.product.images?.[0]?.url }}
+                    source={{ uri: optimizeCloudinaryUrl(item.product.images?.[0]?.url, 200) }}
                     className="bg-background-lighter"
                     contentFit="cover"
+                    transition={200}
                     style={{ width: 112, height: 112, borderRadius: 16 }}
                   />
                   <View className="absolute top-2 right-2 bg-primary rounded-full px-2 py-0.5">
