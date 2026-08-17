@@ -17,7 +17,8 @@
         "EXPO_PUBLIC_API_URL": "https://toyhourse.vercel.app/api",
         "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       },
-      "node": "20.10.0"
+      "node": "22.13.0",
+      "channel": "development"
     },
     "preview": {
       "distribution": "internal",
@@ -28,7 +29,8 @@
         "EXPO_PUBLIC_API_URL": "https://toyhourse.vercel.app/api",
         "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       },
-      "node": "20.10.0"
+      "node": "22.13.0",
+      "channel": "preview"
     },
     "production": {
       "distribution": "store",
@@ -39,7 +41,8 @@
         "EXPO_PUBLIC_API_URL": "https://toyhourse.vercel.app/api",
         "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       },
-      "node": "20.10.0"
+      "node": "22.13.0",
+      "channel": "production"
     }
   },
   "submit": {
