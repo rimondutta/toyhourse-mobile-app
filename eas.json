@@ -15,7 +15,7 @@
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://toyhourse.vercel.app/api",
-        "SENTRY_SKIP_SOURCE_MAPS": "true"
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       },
       "node": "20.10.0"
     },
@@ -26,7 +26,7 @@
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://toyhourse.vercel.app/api",
-        "SENTRY_SKIP_SOURCE_MAPS": "true"
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       },
       "node": "20.10.0"
     },
@@ -37,7 +37,7 @@
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://toyhourse.vercel.app/api",
-        "SENTRY_SKIP_SOURCE_MAPS": "true"
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       },
       "node": "20.10.0"
     }
