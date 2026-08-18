@@ -9,24 +9,13 @@ LogBox.ignoreLogs([
   "SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead.",
 ]);
 
-
 Sentry.init({
   dsn: "https://fb6731b90610cc08333e6c16ffac5724@o4509813037137920.ingest.de.sentry.io/4510451611205712",
-
-  // Adds more context data to events (IP address, cookies, user, etc.)
-  // For more information, visit: https://docs.sentry.io/platforms/react-native/data-management/data-collected/
   sendDefaultPii: true,
-
-  // Enable Logs
   enableLogs: true,
-
-  // Configure Session Replay
   replaysSessionSampleRate: 1.0,
   replaysOnErrorSampleRate: 1,
   integrations: [Sentry.mobileReplayIntegration()],
-
-  // uncomment the line below to enable Spotlight (https://spotlightjs.com)
-  // spotlight: __DEV__,
 });
 
 const queryClient = new QueryClient({
@@ -35,7 +24,7 @@ const queryClient = new QueryClient({
       Sentry.captureException(error, {
         tags: {
           type: "react-query-error",
-          queryKey: query.queryKey[0]?.toString() || "unknon",
+          queryKey: query.queryKey[0]?.toString() || "unknown",
         },
         extra: {
           errorMessage: error.message,
@@ -47,7 +36,6 @@ const queryClient = new QueryClient({
   }),
   mutationCache: new MutationCache({
     onError: (error: any) => {
-      // global error handler for all mutations
       Sentry.captureException(error, {
         tags: { type: "react-query-mutation-error" },
         extra: {
@@ -60,13 +48,40 @@ const queryClient = new QueryClient({
 });
 
 import { useLastUpdated } from "@/hooks/useLastUpdated";
+import { useAppUpdate } from "@/hooks/useAppUpdate";
+import { useState } from "react";
+import AppUpdateModal from "@/components/AppUpdateModal";
+import { StatusBar } from "expo-status-bar";
 
+/**
+ * AppSync — mounts once at the root.
+ * Runs background tasks that must not affect the navigation tree:
+ *  1. useLastUpdated   — polls for product cache invalidation
+ *  2. useAppUpdate     — single version check on each app launch
+ */
 function AppSync() {
   useLastUpdated();
-  return null;
-}
 
-import { StatusBar } from "expo-status-bar";
+  const { updateType, config, installedVersion, isChecked } = useAppUpdate();
+  const [dismissed, setDismissed] = useState(false);
+
+  // Only show modal once isChecked and there is an update to show
+  const showModal = isChecked && !!updateType && !!config && !dismissed;
+
+  return (
+    <>
+      {showModal && config && (
+        <AppUpdateModal
+          visible={showModal}
+          updateType={updateType}
+          config={config}
+          installedVersion={installedVersion}
+          onDismiss={() => setDismissed(true)}
+        />
+      )}
+    </>
+  );
+}
 
 export default Sentry.wrap(function RootLayout() {
   return (
@@ -74,7 +89,12 @@ export default Sentry.wrap(function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <AppSync />
         <StatusBar style="dark" />
-        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#F8FAFC' } }} />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: "#F8FAFC" },
+          }}
+        />
       </QueryClientProvider>
     </AuthProvider>
   );
