@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isGuest, setIsGuest] = useState(false);
+  const [isGuest, setIsGuest] = useState(true); // Default to guest — app opens to home directly
 
   // Hook for push notifications — only the token is needed here for backend registration.
   // The full notification history is consumed directly via usePushNotifications() on the Notifications screen.
@@ -140,7 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await clearAdminToken();
     setToken(null);
     setUser(null);
-    setIsGuest(false);
+    setIsGuest(true); // Return to guest/home state after sign out
   }, []);
 
   const refreshUser = useCallback(async () => {
