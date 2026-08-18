@@ -56,7 +56,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                 accessibilityRole="button"
                 accessibilityState={isFocused ? { selected: true } : {}}
                 accessibilityLabel={options.tabBarAccessibilityLabel}
-                testID={options.tabBarTestID}
+                testID={options.tabBarButtonTestID}
                 onPress={onPress}
                 activeOpacity={0.8}
                 style={styles.tabButton}

@@ -34,20 +34,20 @@ const ProfileScreen = () => {
     setRefreshing(false);
   };
 
-  const handleMenuPress = (action: (typeof MENU_ITEMS)[number]["action"]) => {
-    router.push(action);
+  const handleMenuPress = (action: string) => {
+    router.push(action as any);
   };
 
   const processProfileImage = async (result: ImagePicker.ImagePickerResult) => {
     if (result.canceled || !result.assets[0].base64) return;
-    
+
     setIsUploading(true);
-    setLocalImage(result.assets[0].uri); // Show optimistic update
+    setLocalImage(result.assets[0].uri);
 
     try {
-      const base64Data = `data:${result.assets[0].mimeType || 'image/jpeg'};base64,${result.assets[0].base64}`;
-      const response = await apiClient.post('/users/profile/image', { imageBase64: base64Data });
-      
+      const base64Data = `data:${result.assets[0].mimeType || "image/jpeg"};base64,${result.assets[0].base64}`;
+      const response = await apiClient.post("/users/profile/image", { imageBase64: base64Data });
+
       if (response.data?.success) {
         await refreshUser();
         Alert.alert("Success", "Profile photo updated successfully!");
@@ -57,7 +57,7 @@ const ProfileScreen = () => {
     } catch (error: any) {
       console.error(error);
       Alert.alert("Error", "Could not upload profile photo.");
-      setLocalImage(null); // Revert optimistic update
+      setLocalImage(null);
     } finally {
       setIsUploading(false);
     }
@@ -65,45 +65,59 @@ const ProfileScreen = () => {
 
   const handleImageChange = async () => {
     if (isUploading) return;
-    Alert.alert(
-      "Change Profile Photo",
-      "Choose a method",
-      [
-        {
-          text: "Camera",
-          onPress: async () => {
-            const { granted } = await ImagePicker.requestCameraPermissionsAsync();
-            if (!granted) return Alert.alert("Permission Denied", "Camera permission is required.");
-            const result = await ImagePicker.launchCameraAsync({
-              mediaTypes: ['images'],
-              allowsEditing: true,
-              aspect: [1, 1],
-              quality: 0.8,
-              base64: true,
-            });
-            processProfileImage(result);
-          },
+    Alert.alert("Change Profile Photo", "Choose a method", [
+      {
+        text: "Camera",
+        onPress: async () => {
+          const { granted } = await ImagePicker.requestCameraPermissionsAsync();
+          if (!granted) return Alert.alert("Permission Denied", "Camera permission is required.");
+          const result = await ImagePicker.launchCameraAsync({
+            mediaTypes: ["images"],
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.8,
+            base64: true,
+          });
+          processProfileImage(result);
         },
-        {
-          text: "Gallery",
-          onPress: async () => {
-            const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-            if (!granted) return Alert.alert("Permission Denied", "Gallery permission is required.");
-            const result = await ImagePicker.launchImageLibraryAsync({
-              mediaTypes: ['images'],
-              allowsEditing: true,
-              aspect: [1, 1],
-              quality: 0.8,
-              base64: true,
-            });
-            processProfileImage(result);
-          },
+      },
+      {
+        text: "Gallery",
+        onPress: async () => {
+          const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+          if (!granted) return Alert.alert("Permission Denied", "Gallery permission is required.");
+          const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ["images"],
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.8,
+            base64: true,
+          });
+          processProfileImage(result);
         },
-        { text: "Cancel", style: "cancel" },
-      ]
-    );
+      },
+      { text: "Cancel", style: "cancel" },
+    ]);
   };
 
+  return (
+    <SafeScreen>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#8B5CF6"
+            colors={["#8B5CF6"]}
+          />
+        }
+      >
+        {/* HEADER */}
+        <View className="px-6 pb-8">
+          <View className="bg-surface rounded-3xl p-6">
             {user ? (
               <View className="flex-row items-center">
                 <TouchableOpacity className="relative" onPress={handleImageChange} activeOpacity={0.8}>
@@ -130,12 +144,8 @@ const ProfileScreen = () => {
                 </TouchableOpacity>
 
                 <View className="flex-1 ml-4">
-                  <Text className="text-text-primary text-2xl font-bold mb-1">
-                    {user.name}
-                  </Text>
-                  <Text className="text-text-secondary text-sm">
-                    {user.email}
-                  </Text>
+                  <Text className="text-text-primary text-2xl font-bold mb-1">{user.name}</Text>
+                  <Text className="text-text-secondary text-sm">{user.email}</Text>
                 </View>
               </View>
             ) : (
@@ -161,19 +171,19 @@ const ProfileScreen = () => {
 
         {/* MENU ITEMS */}
         <View className="flex-row flex-wrap gap-2 mx-6 mb-3">
-          {MENU_ITEMS.filter(item => user || !item.requiresAuth).map((item) => (
+          {MENU_ITEMS.filter((item) => !item.requiresAuth || user).map((item) => (
             <TouchableOpacity
               key={item.id}
               className="bg-surface rounded-2xl p-6 items-center justify-center"
               style={{ width: "48%" }}
               activeOpacity={0.7}
-              onPress={() => handleMenuPress(item.action as any)}
+              onPress={() => handleMenuPress(item.action)}
             >
               <View
                 className="rounded-full w-16 h-16 items-center justify-center mb-4"
                 style={{ backgroundColor: item.color + "20" }}
               >
-                <Ionicons name={item.icon} size={28} color={item.color} />
+                <Ionicons name={item.icon as any} size={28} color={item.color} />
               </View>
               <Text className="text-text-primary font-bold text-base">{item.title}</Text>
             </TouchableOpacity>
@@ -188,25 +198,25 @@ const ProfileScreen = () => {
             onPress={() => router.push("/notifications" as any)}
           >
             <View className="flex-row items-center">
-              <View style={{ position: 'relative' }}>
+              <View style={{ position: "relative" }}>
                 <Ionicons name="notifications-outline" size={22} color="#0F172A" />
                 {unreadCount > 0 && (
                   <View
                     style={{
-                      position: 'absolute',
+                      position: "absolute",
                       top: -4,
                       right: -6,
-                      backgroundColor: '#EF4444',
+                      backgroundColor: "#EF4444",
                       borderRadius: 8,
                       minWidth: 16,
                       height: 16,
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      alignItems: "center",
+                      justifyContent: "center",
                       paddingHorizontal: 3,
                     }}
                   >
-                    <Text style={{ color: '#FFF', fontSize: 9, fontWeight: '800' }}>
-                      {unreadCount > 99 ? '99+' : unreadCount}
+                    <Text style={{ color: "#FFF", fontSize: 9, fontWeight: "800" }}>
+                      {unreadCount > 99 ? "99+" : unreadCount}
                     </Text>
                   </View>
                 )}
@@ -217,12 +227,12 @@ const ProfileScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* PRIVACY AND SECURTIY LINK */}
+        {/* PRIVACY AND SECURITY LINK */}
         <View className="mb-3 mx-6 bg-surface rounded-2xl p-4">
           <TouchableOpacity
             className="flex-row items-center justify-between py-2"
             activeOpacity={0.7}
-            onPress={() => router.push("/privacy-security")}
+            onPress={() => router.push("/privacy-security" as any)}
           >
             <View className="flex-row items-center">
               <Ionicons name="shield-checkmark-outline" size={22} color="#0F172A" />
@@ -232,7 +242,7 @@ const ProfileScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* SIGNOUT BTN */}
+        {/* SIGN OUT BTN — only when signed in */}
         {user && (
           <TouchableOpacity
             className="mx-6 mb-3 bg-surface rounded-2xl py-5 flex-row items-center justify-center border-2 border-red-500/20"
@@ -251,32 +261,3 @@ const ProfileScreen = () => {
 };
 
 export default ProfileScreen;
-
-// REACT NATIVE IMAGE VS EXPO IMAGE:
-
-// React Native Image (what we have used so far):
-// import { Image } from "react-native";
-//
-// <Image source={{ uri: url }} />
-
-// Basic image component
-// No built-in caching optimization
-// Requires source={{ uri: string }}
-
-// Expo Image (from expo-image):
-// import { Image } from "expo-image";
-
-// <Image source={url} />
-
-// Caching - automatic disk/memory caching
-// Placeholder - blur hash, thumbnail while loading
-// Transitions - crossfade, fade animations
-// Better performance - optimized native rendering
-// Simpler syntax: source={url} or source={{ uri: url }}
-// Supports contentFit instead of resizeMode
-
-// Example with expo-image:
-// <Image   source={user?.imageUrl}  placeholder={blurhash}  transition={200}  contentFit="cover"  className="size-20 rounded-full"/>
-
-// Recommendation: For production apps, expo-image is better — faster, cached, smoother UX.
-// React Native's Image works fine for simple cases though.
