@@ -49,34 +49,80 @@ const queryClient = new QueryClient({
 
 import { useLastUpdated } from "@/hooks/useLastUpdated";
 import { useAppUpdate } from "@/hooks/useAppUpdate";
+import { useOTAUpdate } from "@/hooks/useOTAUpdate";
 import { useState } from "react";
 import AppUpdateModal from "@/components/AppUpdateModal";
+import OTAUpdateModal from "@/components/OTAUpdateModal";
 import { StatusBar } from "expo-status-bar";
 
+// ── Environment flag: set EXPO_PUBLIC_FORCE_OTA_UPDATE=true to enforce ──────
+const FORCE_OTA_UPDATE =
+  process.env.EXPO_PUBLIC_FORCE_OTA_UPDATE === "true";
+
 /**
- * AppSync — mounts once at the root.
- * Runs background tasks that must not affect the navigation tree:
- *  1. useLastUpdated   — polls for product cache invalidation
- *  2. useAppUpdate     — single version check on each app launch
+ * AppSync — mounts once at the root level.
+ *
+ * Manages three background systems without affecting navigation:
+ *  1. useLastUpdated — polls the backend to invalidate stale product cache
+ *  2. useAppUpdate   — checks for native APK version updates via the backend API
+ *  3. useOTAUpdate   — checks for Expo OTA JS/asset updates via expo-updates
+ *
+ * Priority: OTA modal is only shown if there is no native app update pending.
+ * This prevents two update modals from appearing simultaneously.
  */
 function AppSync() {
   useLastUpdated();
 
-  const { updateType, config, installedVersion, isChecked } = useAppUpdate();
-  const [dismissed, setDismissed] = useState(false);
+  // ── Native app version check (APK update) ─────────────────
+  const appUpdate = useAppUpdate();
+  const [appUpdateDismissed, setAppUpdateDismissed] = useState(false);
+  const showAppUpdateModal =
+    appUpdate.isChecked &&
+    !!appUpdate.updateType &&
+    !!appUpdate.config &&
+    !appUpdateDismissed;
 
-  // Only show modal once isChecked and there is an update to show
-  const showModal = isChecked && !!updateType && !!config && !dismissed;
+  // ── OTA update check (JS/asset update via expo-updates) ───
+  const ota = useOTAUpdate();
+  const [otaDismissed, setOtaDismissed] = useState(false);
+  // Only show OTA modal if:
+  //  - OTA check is complete
+  //  - There is an update (available, downloading, ready, error)
+  //  - Native app update modal is NOT showing (avoid two modals at once)
+  //  - User hasn't dismissed it
+  const showOTAModal =
+    ota.isChecked &&
+    (ota.status === "available" ||
+      ota.status === "downloading" ||
+      ota.status === "ready" ||
+      (ota.status === "error" && !!ota.error)) &&
+    !showAppUpdateModal &&
+    !otaDismissed;
 
   return (
     <>
-      {showModal && config && (
+      {/* Native APK update modal */}
+      {showAppUpdateModal && appUpdate.config && (
         <AppUpdateModal
-          visible={showModal}
-          updateType={updateType}
-          config={config}
-          installedVersion={installedVersion}
-          onDismiss={() => setDismissed(true)}
+          visible={showAppUpdateModal}
+          updateType={appUpdate.updateType}
+          config={appUpdate.config}
+          installedVersion={appUpdate.installedVersion}
+          onDismiss={() => setAppUpdateDismissed(true)}
+        />
+      )}
+
+      {/* OTA JS/asset update modal */}
+      {showOTAModal && (
+        <OTAUpdateModal
+          visible={showOTAModal}
+          status={ota.status}
+          updateMessage={ota.updateMessage}
+          error={ota.error}
+          forceUpdate={FORCE_OTA_UPDATE}
+          onDownload={ota.downloadUpdate}
+          onApply={ota.applyUpdate}
+          onDismiss={() => setOtaDismissed(true)}
         />
       )}
     </>
