@@ -118,7 +118,7 @@ const ProfileScreen = () => {
           <TouchableOpacity
             className="bg-primary rounded-2xl w-full py-5 items-center"
             activeOpacity={0.8}
-            onPress={() => router.push("/(auth)/")}
+            onPress={() => router.push("/(auth)" as any)}
           >
             <Text className="text-background font-bold text-lg">Sign In / Register</Text>
           </TouchableOpacity>
