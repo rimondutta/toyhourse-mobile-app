@@ -13,7 +13,9 @@
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/c8645cd8-b00f-4115-83d4-ba0d0f780af9"
+      "url": "https://u.expo.dev/c8645cd8-b00f-4115-83d4-ba0d0f780af9",
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
     },
     "ios": {
       "supportsTablet": true,
