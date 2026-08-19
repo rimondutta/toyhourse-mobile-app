@@ -11,9 +11,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import SafeScreen from '@/components/SafeScreen';
 import {
-  usePushNotifications,
-  type StoredNotification,
-} from '@/hooks/usePushNotifications';
+  useNotifications,
+} from '@/hooks/useNotifications';
+import type { AppNotification } from '@/lib/api';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -45,7 +45,7 @@ function getDateGroup(iso: string): string {
 /** Returns an icon name and colour based on common notification title keywords */
 function getNotificationStyle(title: string): { icon: string; color: string; bg: string } {
   const t = title.toLowerCase();
-  if (t.includes('order') || t.includes('shipped') || t.includes('delivered'))
+  if (t.includes('order') || t.includes('shipped') || t.includes('delivered') || t.includes('processing') || t.includes('confirmed'))
     return { icon: 'cube-outline', color: '#10B981', bg: '#D1FAE5' };
   if (t.includes('promo') || t.includes('offer') || t.includes('sale') || t.includes('discount'))
     return { icon: 'pricetag-outline', color: '#F59E0B', bg: '#FEF3C7' };
@@ -62,21 +62,21 @@ function NotificationRow({
   item,
   onRead,
 }: {
-  item: StoredNotification;
+  item: AppNotification;
   onRead: (id: string) => void;
 }) {
   const style = getNotificationStyle(item.title);
 
   return (
     <TouchableOpacity
-      onPress={() => onRead(item.id)}
+      onPress={() => onRead(item._id)}
       activeOpacity={0.75}
       style={{
         flexDirection: 'row',
         alignItems: 'flex-start',
         paddingHorizontal: 20,
         paddingVertical: 14,
-        backgroundColor: item.isRead ? 'transparent' : '#F5F3FF',
+        backgroundColor: item.read ? 'transparent' : '#F5F3FF',
         borderBottomWidth: 1,
         borderBottomColor: '#F1F5F9',
       }}
@@ -103,7 +103,7 @@ function NotificationRow({
           <Text
             style={{
               fontSize: 15,
-              fontWeight: item.isRead ? '600' : '700',
+              fontWeight: item.read ? '600' : '700',
               color: '#1E293B',
               flex: 1,
               marginRight: 8,
@@ -112,7 +112,7 @@ function NotificationRow({
           >
             {item.title}
           </Text>
-          {!item.isRead && (
+          {!item.read && (
             <View
               style={{
                 width: 8,
@@ -131,7 +131,7 @@ function NotificationRow({
           {item.body}
         </Text>
         <Text style={{ fontSize: 11, color: '#94A3B8', marginTop: 6, fontWeight: '500' }}>
-          {formatRelativeDate(item.receivedAt)}
+          {formatRelativeDate(item.createdAt)}
         </Text>
       </View>
     </TouchableOpacity>
@@ -188,34 +188,19 @@ function EmptyState() {
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
 export default function NotificationsScreen() {
-  const { notifications, unreadCount, markAllRead, markAsRead, clearAllNotifications } =
-    usePushNotifications();
+  const { notifications, unreadCount, markAllRead, markAsRead } =
+    useNotifications();
 
   // Group notifications by date label
   const grouped = useMemo(() => {
-    const groups: Record<string, StoredNotification[]> = {};
+    const groups: Record<string, AppNotification[]> = {};
     for (const n of notifications) {
-      const label = getDateGroup(n.receivedAt);
+      const label = getDateGroup(n.createdAt);
       if (!groups[label]) groups[label] = [];
       groups[label].push(n);
     }
     return groups;
   }, [notifications]);
-
-  const handleClearAll = () => {
-    Alert.alert(
-      'Clear All Notifications',
-      'This will permanently delete your entire notification history.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Clear All',
-          style: 'destructive',
-          onPress: clearAllNotifications,
-        },
-      ]
-    );
-  };
 
   return (
     <SafeScreen>
@@ -275,22 +260,6 @@ export default function NotificationsScreen() {
               </Text>
             </TouchableOpacity>
           )}
-          {notifications.length > 0 && (
-            <TouchableOpacity
-              onPress={handleClearAll}
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 18,
-                backgroundColor: '#FEE2E2',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="trash-outline" size={16} color="#EF4444" />
-            </TouchableOpacity>
-          )}
         </View>
       </View>
 
@@ -341,7 +310,7 @@ export default function NotificationsScreen() {
                 }}
               >
                 {items.map((item, idx) => (
-                  <View key={item.id}>
+                  <View key={item._id}>
                     <NotificationRow item={item} onRead={markAsRead} />
                     {idx < items.length - 1 && (
                       <View

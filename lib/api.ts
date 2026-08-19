@@ -216,4 +216,117 @@ export async function updateProfile(
   return data;
 };
 
+// ── Forgot Password flow ──────────────────────────────────────
+
+export interface ForgotPasswordResponse {
+  message: string;
+}
+
+export interface VerifyOtpResponse {
+  resetToken: string;
+}
+
+/** POST /api/auth/forgot-password — request OTP */
+export async function forgotPassword(
+  email: string
+): Promise<ApiResponse<ForgotPasswordResponse>> {
+  const { data } = await apiClient.post<ApiResponse<ForgotPasswordResponse>>(
+    '/auth/forgot-password',
+    { email }
+  );
+  return data;
+}
+
+/** POST /api/auth/verify-reset-otp — verify OTP, get resetToken */
+export async function verifyResetOtp(
+  email: string,
+  otp: string
+): Promise<ApiResponse<VerifyOtpResponse>> {
+  const { data } = await apiClient.post<ApiResponse<VerifyOtpResponse>>(
+    '/auth/verify-reset-otp',
+    { email, otp }
+  );
+  return data;
+}
+
+/** POST /api/auth/reset-password — set new password */
+export async function resetPassword(
+  resetToken: string,
+  newPassword: string
+): Promise<ApiResponse<{ message: string }>> {
+  const { data } = await apiClient.post<ApiResponse<{ message: string }>>(
+    '/auth/reset-password',
+    { resetToken, newPassword }
+  );
+  return data;
+}
+
+// ── Notifications ─────────────────────────────────────────────
+
+export interface AppNotification {
+  _id: string;
+  title: string;
+  body: string;
+  type: string;
+  read: boolean;
+  orderId: string | null;
+  createdAt: string;
+}
+
+export interface NotificationListResponse {
+  data: AppNotification[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasMore: boolean;
+  };
+}
+
+/** GET /api/notifications — paginated notification list */
+export async function getNotifications(
+  page = 1,
+  limit = 20
+): Promise<ApiResponse<AppNotification[]> & { pagination?: NotificationListResponse['pagination'] }> {
+  const headers = await getAuthHeaders();
+  const { data } = await apiClient.get('/notifications', {
+    params: { page, limit },
+    headers,
+  });
+  return data;
+}
+
+/** GET /api/notifications/unread-count */
+export async function getUnreadCount(): Promise<{ success: boolean; count: number }> {
+  const headers = await getAuthHeaders();
+  const { data } = await apiClient.get('/notifications/unread-count', { headers });
+  return data;
+}
+
+/** PATCH /api/notifications/:id/read */
+export async function markNotificationRead(id: string): Promise<ApiResponse<any>> {
+  const headers = await getAuthHeaders();
+  const { data } = await apiClient.patch(`/notifications/${id}/read`, {}, { headers });
+  return data;
+}
+
+/** PATCH /api/notifications/read-all */
+export async function markAllNotificationsRead(): Promise<ApiResponse<any>> {
+  const headers = await getAuthHeaders();
+  const { data } = await apiClient.patch('/notifications/read-all', {}, { headers });
+  return data;
+}
+
+/** PATCH /api/mobile/push-token — register Expo push token */
+export async function registerPushToken(pushToken: string): Promise<ApiResponse<any>> {
+  const headers = await getAuthHeaders();
+  const { data } = await apiClient.patch(
+    '/mobile/push-token',
+    { pushToken },
+    { headers }
+  );
+  return data;
+}
+
 export default apiClient;

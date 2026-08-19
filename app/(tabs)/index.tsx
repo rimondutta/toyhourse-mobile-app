@@ -33,19 +33,40 @@ const BACKGROUND = '#F9F5FF';
 const HERO_SLIDES = [
   {
     id: '1',
-    title: '15% Off Today',
-    subtitle: 'Your Beauty Journey Starts Here',
+    title: '30% Off Today',
+    subtitle: 'All Toy Products',
     bg: '#D8B4FE', // Soft purple
     accent: '#581C87',
   },
   {
     id: '2',
-    title: 'New Arrivals',
-    subtitle: 'Discover Beauty Essentials',
+    title: 'Free Shiping',
+    subtitle: 'All Over Bangladesh',
     bg: '#FBCFE8', // Soft pink
     accent: '#831843',
   },
 ];
+
+function UnreadBadge() {
+  const { unreadCount } = require('@/hooks/useNotifications').useNotifications();
+  
+  if (unreadCount === 0) return null;
+  
+  return (
+    <View style={{
+      position: 'absolute', top: 4, right: 4, 
+      backgroundColor: '#EF4444', 
+      minWidth: 16, height: 16, borderRadius: 8, 
+      alignItems: 'center', justifyContent: 'center',
+      paddingHorizontal: 4,
+      borderWidth: 1.5, borderColor: '#FFFFFF'
+    }}>
+      <Text style={{ color: '#FFFFFF', fontSize: 10, fontWeight: 'bold' }}>
+        {unreadCount > 99 ? '99+' : unreadCount}
+      </Text>
+    </View>
+  );
+}
 
 const ShopScreen = () => {
   const { user, isGuest } = useAuth();
@@ -98,9 +119,9 @@ const ShopScreen = () => {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
               <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: PURPLE, alignItems: 'center', justifyContent: 'center' }}>
                 {user?.image ? (
-                  <Image 
-                    source={{ uri: optimizeCloudinaryUrl(user.image, 100) }} 
-                    style={{ width: 44, height: 44, borderRadius: 22 }} 
+                  <Image
+                    source={{ uri: optimizeCloudinaryUrl(user.image, 100) }}
+                    style={{ width: 44, height: 44, borderRadius: 22 }}
                     contentFit="cover"
                     transition={200}
                   />
@@ -116,10 +137,12 @@ const ShopScreen = () => {
 
             {/* Notification Icon */}
             <TouchableOpacity
+              onPress={() => router.push('/notifications')}
               style={{ width: 44, height: 44, backgroundColor: '#FFFFFF', borderRadius: 22, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 }}
               activeOpacity={0.7}
             >
               <Ionicons name="notifications-outline" size={22} color={DARK_TEXT} />
+              <UnreadBadge />
             </TouchableOpacity>
           </View>
 

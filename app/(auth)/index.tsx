@@ -126,7 +126,10 @@ const LoginScreen = () => {
             </View>
           </View>
 
-          <TouchableOpacity style={{ alignSelf: 'flex-end', marginTop: -8 }}>
+          <TouchableOpacity 
+            style={{ alignSelf: 'flex-end', marginTop: -8 }}
+            onPress={() => router.push('/(auth)/forgot-password')}
+          >
             <Text style={{ color: PURPLE, fontSize: 14, fontWeight: "600" }}>Forgot password?</Text>
           </TouchableOpacity>
 

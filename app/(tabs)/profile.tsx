@@ -1,6 +1,6 @@
 import SafeScreen from "@/components/SafeScreen";
 import { useAuth } from "@/context/AuthContext";
-import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { useNotifications } from "@/hooks/useNotifications";
 
 import { ScrollView, Text, TouchableOpacity, View, RefreshControl } from "react-native";
 import { Image } from "expo-image";
@@ -23,7 +23,7 @@ const MENU_ITEMS = [
 
 const ProfileScreen = () => {
   const { signOut, user, refreshUser } = useAuth();
-  const { unreadCount } = usePushNotifications();
+  const { unreadCount } = useNotifications();
   const [localImage, setLocalImage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);

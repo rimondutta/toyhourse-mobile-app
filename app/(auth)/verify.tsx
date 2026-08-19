@@ -80,7 +80,7 @@ const VerifyScreen = () => {
           {[0, 1, 2, 3].map((index) => (
             <TextInput
               key={index}
-              ref={(ref) => (inputs.current[index] = ref)}
+              ref={(ref) => { inputs.current[index] = ref; }}
               style={{
                 width: 60,
                 height: 60,
