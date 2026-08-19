@@ -136,6 +136,7 @@ export default Sentry.wrap(function RootLayout() {
         <AppSync />
         <StatusBar style="dark" />
         <Stack
+          initialRouteName="(tabs)"
           screenOptions={{
             headerShown: false,
             contentStyle: { backgroundColor: "#F8FAFC" },
