@@ -67,12 +67,12 @@ export function useOTAUpdate(): OTAUpdateState {
 
   let status: OTAStatus = 'idle';
   
-  if (isChecking) {
-    status = 'checking';
+  if (isUpdatePending) {
+    status = 'ready';
   } else if (isDownloading || manualDownloading) {
     status = 'downloading';
-  } else if (isUpdatePending) {
-    status = 'ready';
+  } else if (isChecking) {
+    status = 'checking';
   } else if (isUpdateAvailable) {
     status = 'available';
   } else if (checkError || downloadError || manualError) {
@@ -106,6 +106,7 @@ export function useOTAUpdate(): OTAUpdateState {
       setManualError(null);
       setManualDownloading(true);
       await Updates.fetchUpdateAsync();
+      setManualDownloading(false);
     } catch (e: any) {
       // If it throws because the native side is already downloading it,
       // we don't want to show a scary error. We just wait for isUpdatePending.
