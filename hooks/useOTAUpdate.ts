@@ -61,26 +61,28 @@ export function useOTAUpdate(): OTAUpdateState {
     downloadError,
   } = Updates.useUpdates();
 
+  // Manual state overrides for when the user clicks the button
+  const [manualDownloading, setManualDownloading] = useState(false);
+  const [manualError, setManualError] = useState<string | null>(null);
+
   let status: OTAStatus = 'idle';
   
   if (isChecking) {
     status = 'checking';
-  } else if (isDownloading) {
+  } else if (isDownloading || manualDownloading) {
     status = 'downloading';
   } else if (isUpdatePending) {
     status = 'ready';
   } else if (isUpdateAvailable) {
     status = 'available';
-  } else if (checkError || downloadError) {
+  } else if (checkError || downloadError || manualError) {
     status = 'error';
   } else {
-    // If not checking, not downloading, not available, and no error
-    // but the startup procedure is done (assumed if we got past checking)
     status = 'up-to-date';
   }
 
   // Use the error message if any
-  const errorMsg = downloadError?.message || checkError?.message || null;
+  const errorMsg = manualError || downloadError?.message || checkError?.message || null;
 
   // Extract update message from manifest if available
   const manifest = availableUpdate?.manifest as any;
@@ -92,17 +94,27 @@ export function useOTAUpdate(): OTAUpdateState {
   // In ON_LOAD mode, we typically don't need to manually check/fetch, but we expose them just in case
   const checkForUpdate = async () => {
     try {
+      setManualError(null);
       await Updates.checkForUpdateAsync();
-    } catch {
-      // Ignored
+    } catch (e: any) {
+      setManualError(e.message || 'Failed to check for updates.');
     }
   };
 
   const downloadUpdate = async () => {
     try {
+      setManualError(null);
+      setManualDownloading(true);
       await Updates.fetchUpdateAsync();
-    } catch {
-      // Ignored - rely on the useUpdates state to show error
+    } catch (e: any) {
+      // If it throws because the native side is already downloading it,
+      // we don't want to show a scary error. We just wait for isUpdatePending.
+      if (e.message?.includes('already') || e.message?.includes('progress')) {
+        // Just stay in downloading state, the useUpdates hook will trigger isUpdatePending when ready
+        return;
+      }
+      setManualError(e.message || 'Download failed. Please try again.');
+      setManualDownloading(false);
     }
   };
 
