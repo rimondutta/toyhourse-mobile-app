@@ -104,6 +104,13 @@ const ShopScreen = () => {
   const greeting = isGuest ? 'Guest' : (user?.name?.split(' ')[0] ?? 'there');
   const firstLetter = greeting.charAt(0).toUpperCase();
 
+  const getDynamicGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning,';
+    if (hour < 18) return 'Good Afternoon,';
+    return 'Good Evening,';
+  };
+
   return (
     <SafeScreen>
       <ScrollView
@@ -130,7 +137,7 @@ const ShopScreen = () => {
                 )}
               </View>
               <View>
-                <Text style={{ color: LIGHT_TEXT, fontSize: 13, fontWeight: '500' }}>Good Morning,</Text>
+                <Text style={{ color: LIGHT_TEXT, fontSize: 13, fontWeight: '500' }}>{getDynamicGreeting()}</Text>
                 <Text style={{ color: DARK_TEXT, fontSize: 18, fontWeight: '700' }}>{greeting}</Text>
               </View>
             </View>
