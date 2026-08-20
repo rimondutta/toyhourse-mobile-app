@@ -86,6 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (res.success) {
             setToken(savedToken);
             setUser(res.data);
+            setIsGuest(false);
           } else {
             // Token is expired or invalid — clear it
             await SecureStore.deleteItemAsync(SECURE_STORE_TOKEN_KEY);
@@ -121,6 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await saveAdminToken(res.data.token);
     setToken(res.data.token);
     setUser(res.data.user);
+    setIsGuest(false);
   }, []);
 
   const signUp = useCallback(async (name: string, email: string, password: string) => {
