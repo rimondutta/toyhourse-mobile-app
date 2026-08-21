@@ -94,8 +94,7 @@ function AppSync() {
     ota.isChecked &&
     (ota.status === "available" ||
       ota.status === "downloading" ||
-      ota.status === "ready" ||
-      (ota.status === "error" && !!ota.error)) &&
+      ota.status === "ready") &&
     !showAppUpdateModal &&
     !otaDismissed;
 
