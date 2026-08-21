@@ -50,20 +50,20 @@ const RatingModal = ({
               </View>
 
               <ScrollView className="mb-4">
-                {order?.orderItems.map((item, index) => {
-                  const productId = item.product._id;
+                {order?.items.map((item, index) => {
+                  const productId = item.product; // it's an ObjectId string
                   const currentRating = productRatings[productId] || 0;
 
                   return (
                     <View
                       key={item._id}
                       className={`bg-background-lighter rounded-2xl p-4 ${
-                        index < order.orderItems.length - 1 ? "mb-3" : ""
+                        index < order.items.length - 1 ? "mb-3" : ""
                       }`}
                     >
                       <View className="flex-row items-center mb-3">
                         <Image
-                          source={item.image}
+                          source={(item as any).image || require("@/assets/images/icon.png")}
                           style={{ height: 64, width: 64, borderRadius: 8 }}
                         />
                         <View className="flex-1 ml-3">
@@ -71,7 +71,7 @@ const RatingModal = ({
                             className="text-text-primary font-semibold text-sm"
                             numberOfLines={2}
                           >
-                            {item.name}
+                            {item.title}
                           </Text>
                           <Text className="text-text-secondary text-xs mt-1">
                             Qty: {item.quantity} • ৳{item.price.toFixed(2)}

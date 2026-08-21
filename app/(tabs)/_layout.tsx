@@ -32,53 +32,22 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
               }
             };
 
-            // Setup a simple bounce scale animation on selection
-            const scaleAnim = useRef(new Animated.Value(isFocused ? 1 : 0)).current;
-
-            useEffect(() => {
-              Animated.spring(scaleAnim, {
-                toValue: isFocused ? 1 : 0,
-                useNativeDriver: true,
-                bounciness: 12,
-              }).start();
-            }, [isFocused]);
-
-            // Determine icon
-            let iconName: any = "home-outline";
-            if (route.name === "index") iconName = isFocused ? "home" : "home-outline";
-            if (route.name === "search") iconName = isFocused ? "search" : "search-outline";
-            if (route.name === "cart") iconName = isFocused ? "bag" : "bag-outline";
-            if (route.name === "profile") iconName = isFocused ? "person" : "person-outline";
+            const onLongPress = () => {
+              navigation.emit({
+                type: 'tabLongPress',
+                target: route.key,
+              });
+            };
 
             return (
-              <TouchableOpacity
+              <TabBarItem
                 key={route.key}
-                accessibilityRole="button"
-                accessibilityState={isFocused ? { selected: true } : {}}
-                accessibilityLabel={options.tabBarAccessibilityLabel}
-                testID={options.tabBarButtonTestID}
+                route={route}
+                options={options}
+                isFocused={isFocused}
                 onPress={onPress}
-                activeOpacity={0.8}
-                style={styles.tabButton}
-              >
-                <View style={styles.iconContainer}>
-                  <Ionicons
-                    name={iconName}
-                    size={24}
-                    color={isFocused ? "#0F172A" : "#94A3B8"}
-                  />
-                  {/* Animated dot for active state */}
-                  <Animated.View
-                    style={[
-                      styles.activeDot,
-                      {
-                        transform: [{ scale: scaleAnim }],
-                        opacity: scaleAnim,
-                      },
-                    ]}
-                  />
-                </View>
-              </TouchableOpacity>
+                onLongPress={onLongPress}
+              />
             );
           })}
         </View>
@@ -86,6 +55,54 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     </View>
   );
 }
+
+const TabBarItem = ({ route, options, isFocused, onPress, onLongPress }: any) => {
+  const scaleAnim = useRef(new Animated.Value(isFocused ? 1 : 0)).current;
+
+  useEffect(() => {
+    Animated.spring(scaleAnim, {
+      toValue: isFocused ? 1 : 0,
+      useNativeDriver: true,
+      bounciness: 12,
+    }).start();
+  }, [isFocused, scaleAnim]);
+
+  let iconName: any = "home-outline";
+  if (route.name === "index") iconName = isFocused ? "home" : "home-outline";
+  if (route.name === "search") iconName = isFocused ? "search" : "search-outline";
+  if (route.name === "cart") iconName = isFocused ? "bag" : "bag-outline";
+  if (route.name === "profile") iconName = isFocused ? "person" : "person-outline";
+
+  return (
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityState={isFocused ? { selected: true } : {}}
+      accessibilityLabel={options.tabBarAccessibilityLabel}
+      testID={options.tabBarButtonTestID}
+      onPress={onPress}
+      onLongPress={onLongPress}
+      activeOpacity={0.8}
+      style={styles.tabButton}
+    >
+      <View style={styles.iconContainer}>
+        <Ionicons
+          name={iconName}
+          size={24}
+          color={isFocused ? "#0F172A" : "#94A3B8"}
+        />
+        <Animated.View
+          style={[
+            styles.activeDot,
+            {
+              transform: [{ scale: scaleAnim }],
+              opacity: scaleAnim,
+            },
+          ]}
+        />
+      </View>
+    </TouchableOpacity>
+  );
+};
 
 const TabsLayout = () => {
   const { isSignedIn, isLoaded } = useAuth();
