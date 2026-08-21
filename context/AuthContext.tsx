@@ -49,6 +49,8 @@ interface AuthContextValue {
   continueAsGuest: () => void;
   /** Sign in with email + password */
   signIn: (email: string, password: string) => Promise<void>;
+  /** Sign in using a Google OAuth access token */
+  signInWithGoogleToken: (accessToken: string) => Promise<void>;
   /** Register a new customer account, then sign in automatically */
   signUp: (name: string, email: string, password: string) => Promise<void>;
   /** Clear the stored token and reset state */
@@ -125,6 +127,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsGuest(false);
   }, []);
 
+  const signInWithGoogleToken = useCallback(async (accessToken: string) => {
+    const res = await import('@/lib/api').then((m) => m.googleLogin(accessToken));
+    if (!res.success) {
+      throw new Error(res.error ?? 'Google Login failed');
+    }
+    await saveAdminToken(res.data.token);
+    setToken(res.data.token);
+    setUser(res.data.user);
+    setIsGuest(false);
+  }, []);
+
   const signUp = useCallback(async (name: string, email: string, password: string) => {
     const regRes = await apiRegister(name, email, password);
     if (!regRes.success) {
@@ -164,6 +177,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isGuest,
         continueAsGuest,
         signIn,
+        signInWithGoogleToken,
         signUp,
         signOut,
         refreshUser,

@@ -1,7 +1,9 @@
 import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import * as WebBrowser from "expo-web-browser";
+import * as Google from "expo-auth-session/providers/google";
 import {
   View,
   Text,
@@ -20,7 +22,40 @@ const DARK_TEXT = "#1F2937";
 const LIGHT_TEXT = "#9CA3AF";
 
 const LoginScreen = () => {
-  const { signIn, continueAsGuest } = useAuth();
+  const { signIn, signInWithGoogleToken, continueAsGuest } = useAuth();
+
+  // Setup Google Auth Session
+  WebBrowser.maybeCompleteAuthSession();
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID || "PLACEHOLDER",
+    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || "PLACEHOLDER",
+  });
+
+  useEffect(() => {
+    if (response?.type === "success") {
+      const { authentication } = response;
+      if (authentication?.accessToken) {
+        handleGoogleAuth(authentication.accessToken);
+      }
+    } else if (response?.type === "error") {
+      setError(response.error?.message || "Google Sign-In failed");
+    }
+  }, [response]);
+
+  const handleGoogleAuth = async (accessToken: string) => {
+    setLoading(true);
+    setError("");
+    try {
+      await signInWithGoogleToken(accessToken);
+      router.replace("/(tabs)");
+    } catch (err: any) {
+      const msg = err?.message ?? "Google login failed.";
+      setError(msg);
+      Alert.alert("Login failed", msg);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
@@ -165,7 +200,11 @@ const LoginScreen = () => {
 
         {/* SOCIAL LOGIN */}
         <View style={{ flexDirection: "row", justifyContent: "center", gap: 16, marginBottom: 40 }}>
-          <TouchableOpacity style={{ width: 60, height: 60, borderRadius: 20, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#E5E7EB" }}>
+          <TouchableOpacity
+            disabled={!request || loading}
+            onPress={() => promptAsync()}
+            style={{ width: 60, height: 60, borderRadius: 20, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#E5E7EB", opacity: (!request || loading) ? 0.6 : 1 }}
+          >
             <Ionicons name="logo-google" size={24} color="#DB4437" />
           </TouchableOpacity>
           <TouchableOpacity style={{ width: 60, height: 60, borderRadius: 20, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#E5E7EB" }}>

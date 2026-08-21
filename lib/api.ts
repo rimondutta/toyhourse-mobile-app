@@ -180,6 +180,17 @@ export async function login(
   return data;
 }
 
+/** POST /api/auth/mobile/google — exchange Google access token for a JWT */
+export async function googleLogin(
+  accessToken: string
+): Promise<ApiResponse<LoginResponse>> {
+  const { data } = await apiClient.post<ApiResponse<LoginResponse>>(
+    '/auth/mobile/google',
+    { accessToken }
+  );
+  return data;
+}
+
 /** POST /api/auth/register — create a new customer account */
 export async function register(
   name: string,
