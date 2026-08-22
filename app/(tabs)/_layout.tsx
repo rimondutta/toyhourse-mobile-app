@@ -86,7 +86,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 
   return (
     <View style={[styles.wrapper, { paddingBottom: insets.bottom || 20 }]}>
-      <BlurView intensity={90} tint="dark" style={styles.tabBarContainer}>
+      <BlurView intensity={90} tint="light" style={styles.tabBarContainer}>
         <View style={styles.tabBarInner}>
           {state.routes.map((route, index) => {
             const { options } = descriptors[route.key];
@@ -159,17 +159,17 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     overflow: "hidden",
     borderCurve: "continuous",
-    borderColor: "rgba(255,255,255,0.08)",
+    borderColor: "rgba(0,0,0,0.05)",
     borderWidth: 1,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.1,
     shadowRadius: 20,
     elevation: 20,
   },
   tabBarInner: {
     flexDirection: "row",
-    backgroundColor: "rgba(10, 10, 15, 0.4)", // Slight deep dark tint matching website
+    backgroundColor: "rgba(255, 255, 255, 0.7)", // Light frosted glass
     paddingHorizontal: 8,
     paddingVertical: 8,
     justifyContent: "space-between",
