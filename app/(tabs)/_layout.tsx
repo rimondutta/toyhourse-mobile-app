@@ -23,6 +23,7 @@ const INACTIVE_BG = "transparent";
 const ACTIVE_BG = "rgba(124, 58, 237, 0.15)";
 
 // ─── Single Tab Item ──────────────────────────────────────────────────────────
+const TabBarItem = ({ route, options, isFocused, onPress, onLongPress }: any) => {
   const scaleAnim = useRef(new Animated.Value(isFocused ? 1 : 0)).current;
 
   useEffect(() => {
