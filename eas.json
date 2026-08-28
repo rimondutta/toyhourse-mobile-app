@@ -14,9 +14,10 @@
         "simulator": true
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://toyhourse.vercel.app/api",
+        "EXPO_PUBLIC_SENTRY_DSN": "https://66a37ac28df6baefc5382f9a11fdf647@o4511988926382080.ingest.de.sentry.io/4511988946763856",
+        "EXPO_PUBLIC_FORCE_OTA_UPDATE": "false",
         "SENTRY_DISABLE_AUTO_UPLOAD": "true",
-        "EXPO_PUBLIC_FORCE_OTA_UPDATE": "false"
+        "EAS_BUILD_NO_EXPO_GO_WARNING": "true"
       },
       "node": "22.13.0",
       "channel": "development"
@@ -27,12 +28,27 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://toyhourse.vercel.app/api",
+        "EXPO_PUBLIC_SENTRY_DSN": "https://66a37ac28df6baefc5382f9a11fdf647@o4511988926382080.ingest.de.sentry.io/4511988946763856",
+        "EXPO_PUBLIC_FORCE_OTA_UPDATE": "false",
         "SENTRY_DISABLE_AUTO_UPLOAD": "true",
-        "EXPO_PUBLIC_FORCE_OTA_UPDATE": "false"
+        "EAS_BUILD_NO_EXPO_GO_WARNING": "true"
       },
       "node": "22.13.0",
       "channel": "preview"
+    },
+    "production-apk": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_SENTRY_DSN": "https://66a37ac28df6baefc5382f9a11fdf647@o4511988926382080.ingest.de.sentry.io/4511988946763856",
+        "EXPO_PUBLIC_FORCE_OTA_UPDATE": "false",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "false",
+        "EAS_BUILD_NO_EXPO_GO_WARNING": "true"
+      },
+      "node": "22.13.0",
+      "channel": "production"
     },
     "production": {
       "distribution": "store",
@@ -40,9 +56,10 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://toyhourse.vercel.app/api",
-        "SENTRY_DISABLE_AUTO_UPLOAD": "true",
-        "EXPO_PUBLIC_FORCE_OTA_UPDATE": "false"
+        "EXPO_PUBLIC_SENTRY_DSN": "https://66a37ac28df6baefc5382f9a11fdf647@o4511988926382080.ingest.de.sentry.io/4511988946763856",
+        "EXPO_PUBLIC_FORCE_OTA_UPDATE": "false",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "false",
+        "EAS_BUILD_NO_EXPO_GO_WARNING": "true"
       },
       "node": "22.13.0",
       "channel": "production"

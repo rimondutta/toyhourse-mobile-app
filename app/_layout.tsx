@@ -1,21 +1,37 @@
-import { Stack } from "expo-router";
+import { Stack, useNavigationContainerRef } from "expo-router";
 import "../global.css";
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/context/AuthContext";
 import * as Sentry from "@sentry/react-native";
 import { LogBox } from "react-native";
+import { useEffect, useRef } from "react";
 
 LogBox.ignoreLogs([
   "SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead.",
 ]);
 
+// ── Sentry Navigation Integration ────────────────────────────────────────────
+// Tracks screen transitions as Sentry transactions (breadcrumbs + spans).
+const navigationIntegration = Sentry.reactNavigationIntegration({
+  enableTimeToInitialDisplay: true,
+});
+
 Sentry.init({
-  dsn: "https://fb6731b90610cc08333e6c16ffac5724@o4509813037137920.ingest.de.sentry.io/4510451611205712",
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+  // Tag every event with the current environment so you can filter in the dashboard.
+  environment: __DEV__ ? "development" : "production",
+  // Capture 20% of transactions for performance monitoring (slow screens, API calls).
+  // Set to 1.0 during debugging, lower in production to control quota.
+  tracesSampleRate: __DEV__ ? 1.0 : 0.2,
+  // Session Replay: record all sessions; always record sessions that contain an error.
+  replaysSessionSampleRate: __DEV__ ? 1.0 : 0.1,
+  replaysOnErrorSampleRate: 1.0,
   sendDefaultPii: true,
   enableLogs: true,
-  replaysSessionSampleRate: 1.0,
-  replaysOnErrorSampleRate: 1,
-  integrations: [Sentry.mobileReplayIntegration()],
+  integrations: [
+    Sentry.mobileReplayIntegration(),
+    navigationIntegration,
+  ],
 });
 
 const queryClient = new QueryClient({
@@ -129,12 +145,24 @@ function AppSync() {
 }
 
 export default Sentry.wrap(function RootLayout() {
+  // ── Navigation tracking ─────────────────────────────────────────────────────
+  // Provide the navigation container ref to the Sentry integration so it can
+  // record screen transitions as performance transactions and breadcrumbs.
+  const ref = useNavigationContainerRef();
+
+  useEffect(() => {
+    if (ref?.current) {
+      navigationIntegration.registerNavigationContainer(ref);
+    }
+  }, [ref]);
+
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
         <AppSync />
         <StatusBar style="dark" />
         <Stack
+          ref={ref}
           initialRouteName="(tabs)"
           screenOptions={{
             headerShown: false,

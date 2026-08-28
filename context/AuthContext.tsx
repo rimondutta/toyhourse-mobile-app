@@ -20,6 +20,7 @@ import React, {
   useCallback,
 } from 'react';
 import * as SecureStore from 'expo-secure-store';
+import * as Sentry from '@sentry/react-native';
 import {
   login as apiLogin,
   register as apiRegister,
@@ -89,6 +90,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setToken(savedToken);
             setUser(res.data);
             setIsGuest(false);
+            // ── Restore Sentry user context from the saved session ──
+            Sentry.setUser({
+              id: res.data.id,
+              email: res.data.email,
+              username: res.data.name,
+            });
           } else {
             // Token is expired or invalid — clear it
             await SecureStore.deleteItemAsync(SECURE_STORE_TOKEN_KEY);
@@ -125,6 +132,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(res.data.token);
     setUser(res.data.user);
     setIsGuest(false);
+    // ── Attach user identity to all future Sentry events ──
+    Sentry.setUser({
+      id: res.data.user.id,
+      email: res.data.user.email,
+      username: res.data.user.name,
+    });
   }, []);
 
   const signInWithGoogleToken = useCallback(async (accessToken: string) => {
@@ -136,6 +149,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(res.data.token);
     setUser(res.data.user);
     setIsGuest(false);
+    // ── Attach user identity to all future Sentry events ──
+    Sentry.setUser({
+      id: res.data.user.id,
+      email: res.data.user.email,
+      username: res.data.user.name,
+    });
   }, []);
 
   const signUp = useCallback(async (name: string, email: string, password: string) => {
@@ -156,6 +175,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(null);
     setUser(null);
     setIsGuest(true); // Return to guest/home state after sign out
+    // ── Clear Sentry user so errors are no longer attributed to this user ──
+    Sentry.setUser(null);
   }, []);
 
   const refreshUser = useCallback(async () => {
