@@ -58,6 +58,30 @@ export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
 export type FulfillmentStatus = 'unfulfilled' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
 export type PaymentMethod = 'cod' | 'bkash' | 'card';
 
+export interface CourierInfo {
+  name: string;
+  code: string;
+  trackingId?: string;
+  trackingUrl?: string;
+}
+
+export interface TrackingStep {
+  key: string;
+  title: string;
+  description: string;
+  completed: boolean;
+  active: boolean;
+  timestamp?: string;
+}
+
+export interface TrackingTimelineItem {
+  status: string;
+  title: string;
+  description: string;
+  location?: string;
+  timestamp: string;
+}
+
 export interface Order {
   _id: string;
   customerName: string;
@@ -76,6 +100,11 @@ export interface Order {
   paymentMethod: PaymentMethod;
   paymentStatus: PaymentStatus;
   fulfillmentStatus: FulfillmentStatus;
+  courierStatus?: string;
+  courier?: CourierInfo;
+  estimatedDeliveryDate?: string;
+  steps?: TrackingStep[];
+  timeline?: TrackingTimelineItem[];
   notes?: string;
   invoiceNumber?: string;
   invoiceUrl?: string;

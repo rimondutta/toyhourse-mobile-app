@@ -1,4 +1,5 @@
 import RatingModal from "@/components/RatingModal";
+import OrderTrackingModal from "@/components/OrderTrackingModal";
 import SafeScreen from "@/components/SafeScreen";
 import { useOrders } from "@/hooks/useOrders";
 import { useReviews } from "@/hooks/useReviews";
@@ -18,6 +19,10 @@ function OrdersScreen() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [productRatings, setProductRatings] = useState<{ [key: string]: number }>({});
   const [refreshing, setRefreshing] = useState(false);
+
+  // Live Tracking Modal state
+  const [trackingOrder, setTrackingOrder] = useState<Order | null>(null);
+  const [showTrackingModal, setShowTrackingModal] = useState(false);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -155,18 +160,34 @@ function OrdersScreen() {
                       </Text>
                     </View>
 
-                    {order.fulfillmentStatus === "delivered" && (
+                    <View className="flex-row items-center">
                       <TouchableOpacity
-                        className="bg-primary px-5 py-3 rounded-full flex-row items-center"
+                        className="bg-violet-100 border border-violet-200 px-4 py-2.5 rounded-full flex-row items-center mr-2"
                         activeOpacity={0.7}
-                        onPress={() => handleOpenRating(order)}
+                        onPress={() => {
+                          setTrackingOrder(order);
+                          setShowTrackingModal(true);
+                        }}
                       >
-                        <Ionicons name="star" size={18} color="#0F172A" />
-                        <Text className="text-background font-bold text-sm ml-2">
-                          Leave Rating
+                        <Ionicons name="bus-outline" size={16} color="#7C3AED" />
+                        <Text className="text-violet-900 font-bold text-xs ml-1.5">
+                          Track Live
                         </Text>
                       </TouchableOpacity>
-                    )}
+
+                      {order.fulfillmentStatus === "delivered" && (
+                        <TouchableOpacity
+                          className="bg-primary px-4 py-2.5 rounded-full flex-row items-center"
+                          activeOpacity={0.7}
+                          onPress={() => handleOpenRating(order)}
+                        >
+                          <Ionicons name="star" size={16} color="#0F172A" />
+                          <Text className="text-background font-bold text-xs ml-1">
+                            Rate
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
                   </View>
 
                 </View>
@@ -175,6 +196,15 @@ function OrdersScreen() {
           </View>
         </ScrollView>
       )}
+
+      <OrderTrackingModal
+        visible={showTrackingModal}
+        order={trackingOrder}
+        onClose={() => {
+          setShowTrackingModal(false);
+          setTrackingOrder(null);
+        }}
+      />
 
       <RatingModal
         visible={showRatingModal}

@@ -21,6 +21,7 @@ import type {
   Category,
   ProductsQueryParams,
   LastUpdatedResponse,
+  Order,
 } from '@/types';
 
 // ── Constants ────────────────────────────────────────────────
@@ -328,6 +329,18 @@ export async function markAllNotificationsRead(): Promise<ApiResponse<any>> {
   const { data } = await apiClient.patch('/notifications/read-all', {}, { headers });
   return data;
 }
+
+// ── Live Order Tracking ────────────────────────────────────────
+
+/** GET /api/orders/track — Fetch live tracking details for an order */
+export async function trackOrder(orderId: string, phone?: string): Promise<ApiResponse<Order>> {
+  const params: any = { orderId };
+  if (phone) params.phone = phone;
+
+  const { data } = await apiClient.get('/orders/track', { params });
+  return data;
+}
+
 
 /** PATCH /api/mobile/push-token — register Expo push token */
 export async function registerPushToken(pushToken: string): Promise<ApiResponse<any>> {
