@@ -97,7 +97,7 @@ function OrdersScreen() {
         >
           <View className="px-6 py-4">
             {orders.map((order) => {
-              const totalItems = order.items.reduce((sum, item) => sum + item.quantity, 0);
+              const totalItems = order.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
               // items only have productId; no image — show placeholder
               const statusLabel = order.fulfillmentStatus;
 
@@ -111,7 +111,7 @@ function OrdersScreen() {
                       </View>
 
                       {/* BADGE FOR MORE ITEMS */}
-                      {order.items.length > 1 && (
+                      {order.items?.length > 1 && (
                         <View className="absolute -bottom-1 -right-1 bg-primary rounded-full size-7 items-center justify-center">
                           <Text className="text-background text-xs font-bold">
                             +{order.items.length - 1}
@@ -122,7 +122,7 @@ function OrdersScreen() {
 
                     <View className="flex-1 ml-4">
                       <Text className="text-text-primary font-bold text-base mb-1">
-                        Order #{order._id.slice(-8).toUpperCase()}
+                        Order #{order._id?.slice(-8).toUpperCase()}
                       </Text>
                       <Text className="text-text-secondary text-sm mb-2">
                         {formatDate(order.createdAt)}
@@ -142,7 +142,7 @@ function OrdersScreen() {
                   </View>
 
                   {/* ORDER ITEMS SUMMARY */}
-                  {order.items.map((item) => (
+                  {order.items?.map((item) => (
                     <Text
                       key={item._id}
                       className="text-text-secondary text-sm flex-1"

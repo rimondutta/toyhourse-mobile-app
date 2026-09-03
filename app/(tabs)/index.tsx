@@ -303,6 +303,7 @@ const ShopScreen = () => {
           position: 'absolute',
           bottom: 24,
           right: 24,
+          zIndex: 50,
           shadowColor: '#8B5CF6',
           shadowOffset: { width: 0, height: 8 },
           shadowOpacity: 0.4,
