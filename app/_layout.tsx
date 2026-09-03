@@ -168,7 +168,10 @@ export default Sentry.wrap(function RootLayout() {
             headerShown: false,
             contentStyle: { backgroundColor: "#F8FAFC" },
           }}
-        />
+        >
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="ai-assistant" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+        </Stack>
       </QueryClientProvider>
     </AuthProvider>
   );

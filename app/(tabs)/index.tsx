@@ -4,7 +4,8 @@ import useCategories from '@/hooks/useCategories';
 import useProducts from '@/hooks/useProducts';
 import type { ProductsQueryParams } from '@/types/product';
 import { useAuth } from '@/context/AuthContext';
-
+import LiquidOrb from '@/features/ai-assistant/components/LiquidOrb';
+import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useMemo, useState, useEffect, useRef } from 'react';
@@ -17,6 +18,7 @@ import {
   Dimensions,
   TextInput,
   RefreshControl,
+  StyleSheet,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { optimizeCloudinaryUrl } from '@/lib/utils';
@@ -292,6 +294,37 @@ const ShopScreen = () => {
           )}
         </View>
       </ScrollView>
+
+      {/* ─── AI ASSISTANT FAB ────────────────────────────── */}
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={() => router.push('/ai-assistant' as any)}
+        style={{
+          position: 'absolute',
+          bottom: 24,
+          right: 24,
+          shadowColor: '#8B5CF6',
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 0.4,
+          shadowRadius: 16,
+          elevation: 10,
+        }}
+      >
+        <View style={{
+          width: 56,
+          height: 56,
+          borderRadius: 28,
+          overflow: 'hidden',
+          backgroundColor: '#FFFFFF',
+          borderWidth: 1,
+          borderColor: 'rgba(255,255,255,0.5)',
+        }}>
+          <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFillObject} />
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            <LiquidOrb size="avatar" active={false} />
+          </View>
+        </View>
+      </TouchableOpacity>
     </SafeScreen>
   );
 };

@@ -120,7 +120,7 @@ export interface CartItem {
   _id: string;
   product: Product;
   quantity: number;
-}
+};
 
 export interface Cart {
   _id: string;
@@ -129,4 +129,4 @@ export interface Cart {
   items: CartItem[];
   createdAt: string;
   updatedAt: string;
-}
+};
