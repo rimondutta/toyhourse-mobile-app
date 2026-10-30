@@ -4,7 +4,6 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  Alert,
   Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -149,7 +148,7 @@ function EmptyState() {
       Animated.spring(scale, { toValue: 1, useNativeDriver: true, bounciness: 10 }),
       Animated.timing(opacity, { toValue: 1, duration: 400, useNativeDriver: true }),
     ]).start();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Animated.View
@@ -179,7 +178,7 @@ function EmptyState() {
         No Notifications Yet
       </Text>
       <Text style={{ fontSize: 15, color: '#64748B', textAlign: 'center', lineHeight: 22 }}>
-        When you receive order updates, promotions, or alerts, they'll show up here.
+        {"When you receive order updates, promotions, or alerts, they'll show up here."}
       </Text>
     </Animated.View>
   );

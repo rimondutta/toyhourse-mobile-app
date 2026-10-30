@@ -1,20 +1,22 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import SafeScreen from "@/components/SafeScreen";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function WishlistScreen() {
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Wishlist</Text>
+    <SafeScreen>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Wishlist</Text>
+        </View>
+        <View style={styles.empty}>
+          <Ionicons name="heart-outline" size={64} color="#C4B5FD" />
+          <Text style={styles.emptyTitle}>Your wishlist is empty</Text>
+          <Text style={styles.emptyDesc}>Save items you love and find them here.</Text>
+        </View>
       </View>
-      <View style={styles.empty}>
-        <Ionicons name="heart-outline" size={64} color="#C4B5FD" />
-        <Text style={styles.emptyTitle}>Your wishlist is empty</Text>
-        <Text style={styles.emptyDesc}>Save items you love and find them here.</Text>
-      </View>
-    </SafeAreaView>
+    </SafeScreen>
   );
 }
 

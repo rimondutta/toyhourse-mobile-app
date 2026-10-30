@@ -3,7 +3,7 @@ import { useProduct } from '@/hooks/useProduct';
 import useWishlist from '@/hooks/useWishlist';
 import { useAuth } from '@/context/AuthContext';
 import WriteReviewModal from '@/components/WriteReviewModal';
-import type { Product, ProductVariant, VariationType } from '@/types/product';
+import type { Product, ProductVariant } from '@/types/product';
 import {
   getEffectiveImages,
   getEffectivePrice,
@@ -23,7 +23,6 @@ import {
   ScrollView,
   Dimensions,
   StyleSheet,
-  Linking,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -32,7 +31,6 @@ const PURPLE = '#8B5CF6';
 const LIGHT_PURPLE = '#F3E8FF';
 const DARK_TEXT = '#1F2937';
 const LIGHT_TEXT = '#9CA3AF';
-const WHATSAPP_NUMBER = '8801616921965';
 
 function findMatchingVariant(
   selections: Record<string, string>,
@@ -102,14 +100,6 @@ const ProductDetailScreen = () => {
     router.push('/(tabs)/cart');
   };
 
-  const openWhatsApp = () => {
-    if (!product) return;
-    const msg = `Hi! I'm interested in the ${product.title}. Is it available?`;
-    Linking.openURL(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`).catch(() => {
-      Alert.alert('Error', 'WhatsApp could not be opened.');
-    });
-  };
-
   const handleSubmitReview = async (data: { rating: number; title: string; text: string; name: string }) => {
     if (!product) return;
     const res = await fetch(
@@ -133,7 +123,7 @@ const ProductDetailScreen = () => {
   const discountPct = hasDiscount
     ? Math.round(((comparePrice! - displayPrice) / comparePrice!) * 100)
     : 0;
-  const categoryName = typeof product.category === 'object' ? product.category?.name : product.category;
+
   const reviewsList = product.reviews ? [...product.reviews].reverse() : [];
 
   return (

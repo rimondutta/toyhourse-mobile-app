@@ -7,6 +7,7 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "environment": "development",
       "android": {
         "buildType": "apk"
       },
@@ -24,6 +25,7 @@
     },
     "preview": {
       "distribution": "internal",
+      "environment": "preview",
       "android": {
         "buildType": "apk"
       },
@@ -38,6 +40,7 @@
     },
     "production-apk": {
       "distribution": "internal",
+      "environment": "production",
       "android": {
         "buildType": "apk"
       },
@@ -51,9 +54,10 @@
       "channel": "production"
     },
     "production": {
-      "distribution": "store",
+      "distribution": "internal",
+      "environment": "production",
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "apk"
       },
       "env": {
         "EXPO_PUBLIC_SENTRY_DSN": "https://66a37ac28df6baefc5382f9a11fdf647@o4511988926382080.ingest.de.sentry.io/4511988946763856",

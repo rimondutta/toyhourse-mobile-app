@@ -21,6 +21,8 @@ import React, {
 } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import * as Sentry from '@sentry/react-native';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
+
 import {
   login as apiLogin,
   register as apiRegister,
@@ -66,7 +68,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 // Provider
 // ─────────────────────────────────────────────────────────────
 
-import { usePushNotifications } from '@/hooks/usePushNotifications';
+
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);

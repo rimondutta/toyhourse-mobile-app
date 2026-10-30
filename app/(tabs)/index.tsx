@@ -1,32 +1,30 @@
 import ProductsGrid from '@/components/ProductsGrid';
 import SafeScreen from '@/components/SafeScreen';
+import ToyhourseAIButton from '@/components/ToyhourseAIButton';
+import { useAuth } from '@/context/AuthContext';
 import useCategories from '@/hooks/useCategories';
 import useProducts from '@/hooks/useProducts';
+import { useNotifications } from '@/hooks/useNotifications';
+import { optimizeCloudinaryUrl } from '@/lib/utils';
 import type { ProductsQueryParams } from '@/types/product';
-import { useAuth } from '@/context/AuthContext';
-import LiquidOrb from '@/features/ai-assistant/components/LiquidOrb';
-import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { useMemo, useState, useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
   ActivityIndicator,
   Dimensions,
-  TextInput,
   RefreshControl,
+  ScrollView,
   StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { Image } from 'expo-image';
-import { optimizeCloudinaryUrl } from '@/lib/utils';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const PURPLE = '#8B5CF6';
-const LIGHT_PURPLE = '#F3E8FF';
 const DARK_TEXT = '#1F2937';
 const LIGHT_TEXT = '#9CA3AF';
 const BACKGROUND = '#F9F5FF';
@@ -50,19 +48,27 @@ const HERO_SLIDES = [
 ];
 
 function UnreadBadge() {
-  const { unreadCount } = require('@/hooks/useNotifications').useNotifications();
-  
+  const { unreadCount } = useNotifications();
+
   if (unreadCount === 0) return null;
-  
+
   return (
-    <View style={{
-      position: 'absolute', top: 4, right: 4, 
-      backgroundColor: '#EF4444', 
-      minWidth: 16, height: 16, borderRadius: 8, 
-      alignItems: 'center', justifyContent: 'center',
-      paddingHorizontal: 4,
-      borderWidth: 1.5, borderColor: '#FFFFFF'
-    }}>
+    <View
+      style={{
+        position: 'absolute',
+        top: 4,
+        right: 4,
+        backgroundColor: '#EF4444',
+        minWidth: 16,
+        height: 16,
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 4,
+        borderWidth: 1.5,
+        borderColor: '#FFFFFF',
+      }}
+    >
       <Text style={{ color: '#FFFFFF', fontSize: 10, fontWeight: 'bold' }}>
         {unreadCount > 99 ? '99+' : unreadCount}
       </Text>
@@ -117,16 +123,39 @@ const ShopScreen = () => {
     <SafeScreen>
       <ScrollView
         style={{ flex: 1, backgroundColor: BACKGROUND }}
-        contentContainerStyle={{ paddingBottom: 120 }}
+        contentContainerStyle={{ paddingBottom: 160 }}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={PURPLE} colors={[PURPLE]} />}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={PURPLE}
+            colors={[PURPLE]}
+          />
+        }
       >
         {/* ─── HEADER ─────────────────────────────────────── */}
         <View style={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 8 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 20,
+            }}
+          >
             {/* Avatar + Greeting */}
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: PURPLE, alignItems: 'center', justifyContent: 'center' }}>
+              <View
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 22,
+                  backgroundColor: PURPLE,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
                 {user?.image ? (
                   <Image
                     source={{ uri: optimizeCloudinaryUrl(user.image, 100) }}
@@ -135,40 +164,87 @@ const ShopScreen = () => {
                     transition={200}
                   />
                 ) : (
-                  <Text style={{ color: '#FFF', fontWeight: '700', fontSize: 16 }}>{firstLetter}</Text>
+                  <Text style={{ color: '#FFF', fontWeight: '700', fontSize: 16 }}>
+                    {firstLetter}
+                  </Text>
                 )}
               </View>
               <View>
-                <Text style={{ color: LIGHT_TEXT, fontSize: 13, fontWeight: '500' }}>{getDynamicGreeting()}</Text>
-                <Text style={{ color: DARK_TEXT, fontSize: 18, fontWeight: '700' }}>{greeting}</Text>
+                <Text style={{ color: LIGHT_TEXT, fontSize: 13, fontWeight: '500' }}>
+                  {getDynamicGreeting()}
+                </Text>
+                <Text style={{ color: DARK_TEXT, fontSize: 18, fontWeight: '700' }}>
+                  {greeting}
+                </Text>
               </View>
             </View>
 
-            {/* Notification Icon */}
-            <TouchableOpacity
-              onPress={() => router.push('/notifications')}
-              style={{ width: 44, height: 44, backgroundColor: '#FFFFFF', borderRadius: 22, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 }}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="notifications-outline" size={22} color={DARK_TEXT} />
-              <UnreadBadge />
-            </TouchableOpacity>
+            {/* Header Right Actions: Toyhourse AI Button + Notification */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <ToyhourseAIButton
+                size="medium"
+                label="Ai"
+                onPress={() => router.push('/ai-assistant' as any)}
+              />
+
+              <TouchableOpacity
+                onPress={() => router.push('/notifications')}
+                style={{
+                  width: 40,
+                  height: 40,
+                  backgroundColor: '#FFFFFF',
+                  borderRadius: 20,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.05,
+                  shadowRadius: 8,
+                  elevation: 2,
+                }}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="notifications-outline" size={20} color={DARK_TEXT} />
+                <UnreadBadge />
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* Search Bar */}
           <TouchableOpacity
-            style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 24, paddingHorizontal: 20, height: 52, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 8, elevation: 2 }}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: '#FFFFFF',
+              borderRadius: 24,
+              paddingHorizontal: 20,
+              height: 52,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.03,
+              shadowRadius: 8,
+              elevation: 2,
+            }}
             activeOpacity={1}
             onPress={() => router.push('/(tabs)/search')}
           >
             <Ionicons name="search" size={20} color={LIGHT_TEXT} />
-            <Text style={{ marginLeft: 12, color: LIGHT_TEXT, fontSize: 15 }}>Find products...</Text>
+            <Text style={{ marginLeft: 12, color: LIGHT_TEXT, fontSize: 15 }}>
+              Find products...
+            </Text>
           </TouchableOpacity>
         </View>
 
         {/* ─── CATEGORIES PILLS ───────────────────────────── */}
         <View style={{ marginTop: 24, paddingLeft: 24 }}>
-          <Text style={{ fontSize: 18, fontWeight: '700', color: DARK_TEXT, marginBottom: 16 }}>
+          <Text
+            style={{
+              fontSize: 18,
+              fontWeight: '700',
+              color: DARK_TEXT,
+              marginBottom: 16,
+            }}
+          >
             Explore Categories
           </Text>
           {catLoading ? (
@@ -183,14 +259,21 @@ const ShopScreen = () => {
                 onPress={() => setSelectedSlug(undefined)}
                 activeOpacity={0.8}
                 style={{
-                  paddingHorizontal: 20, paddingVertical: 12,
+                  paddingHorizontal: 20,
+                  paddingVertical: 12,
                   borderRadius: 20,
                   backgroundColor: !selectedSlug ? PURPLE : '#FFFFFF',
                   borderWidth: 1,
                   borderColor: !selectedSlug ? PURPLE : '#F3F4F6',
                 }}
               >
-                <Text style={{ fontSize: 14, fontWeight: '600', color: !selectedSlug ? '#FFFFFF' : DARK_TEXT }}>
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: '600',
+                    color: !selectedSlug ? '#FFFFFF' : DARK_TEXT,
+                  }}
+                >
                   All
                 </Text>
               </TouchableOpacity>
@@ -202,14 +285,21 @@ const ShopScreen = () => {
                     onPress={() => setSelectedSlug(c.slug)}
                     activeOpacity={0.8}
                     style={{
-                      paddingHorizontal: 20, paddingVertical: 12,
+                      paddingHorizontal: 20,
+                      paddingVertical: 12,
                       borderRadius: 20,
                       backgroundColor: isActive ? PURPLE : '#FFFFFF',
                       borderWidth: 1,
                       borderColor: isActive ? PURPLE : '#F3F4F6',
                     }}
                   >
-                    <Text style={{ fontSize: 14, fontWeight: '600', color: isActive ? '#FFFFFF' : DARK_TEXT }}>
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        fontWeight: '600',
+                        color: isActive ? '#FFFFFF' : DARK_TEXT,
+                      }}
+                    >
                       {c.name}
                     </Text>
                   </TouchableOpacity>
@@ -245,12 +335,38 @@ const ShopScreen = () => {
                   justifyContent: 'center',
                 }}
               >
-                <Text style={{ color: slide.accent, fontSize: 24, fontWeight: '800', marginBottom: 8 }}>{slide.title}</Text>
-                <Text style={{ color: slide.accent, fontSize: 15, opacity: 0.8, marginBottom: 16 }}>
+                <Text
+                  style={{
+                    color: slide.accent,
+                    fontSize: 24,
+                    fontWeight: '800',
+                    marginBottom: 8,
+                  }}
+                >
+                  {slide.title}
+                </Text>
+                <Text
+                  style={{
+                    color: slide.accent,
+                    fontSize: 15,
+                    opacity: 0.8,
+                    marginBottom: 16,
+                  }}
+                >
                   {slide.subtitle}
                 </Text>
-                <TouchableOpacity style={{ backgroundColor: '#FFFFFF', alignSelf: 'flex-start', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 }}>
-                  <Text style={{ color: slide.accent, fontWeight: '700', fontSize: 13 }}>Shop Now</Text>
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: '#FFFFFF',
+                    alignSelf: 'flex-start',
+                    paddingHorizontal: 16,
+                    paddingVertical: 8,
+                    borderRadius: 20,
+                  }}
+                >
+                  <Text style={{ color: slide.accent, fontWeight: '700', fontSize: 13 }}>
+                    Shop Now
+                  </Text>
                 </TouchableOpacity>
               </View>
             ))}
@@ -274,7 +390,14 @@ const ShopScreen = () => {
 
         {/* ─── POPULAR COLLECTION & GRID ──────────────────── */}
         <View style={{ marginTop: 32, paddingHorizontal: 24 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 16,
+            }}
+          >
             <Text style={{ fontSize: 18, fontWeight: '700', color: DARK_TEXT }}>
               Popular Collection
             </Text>
@@ -295,39 +418,25 @@ const ShopScreen = () => {
         </View>
       </ScrollView>
 
-      {/* ─── AI ASSISTANT FAB ────────────────────────────── */}
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={() => router.push('/ai-assistant' as any)}
-        style={{
-          position: 'absolute',
-          bottom: 24,
-          right: 24,
-          zIndex: 50,
-          shadowColor: '#8B5CF6',
-          shadowOffset: { width: 0, height: 8 },
-          shadowOpacity: 0.4,
-          shadowRadius: 16,
-          elevation: 10,
-        }}
-      >
-        <View style={{
-          width: 56,
-          height: 56,
-          borderRadius: 28,
-          overflow: 'hidden',
-          backgroundColor: '#FFFFFF',
-          borderWidth: 1,
-          borderColor: 'rgba(255,255,255,0.5)',
-        }}>
-          <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFillObject} />
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <LiquidOrb size="avatar" active={false} />
-          </View>
-        </View>
-      </TouchableOpacity>
+      {/* ─── FLOATING TOYHOURSE AI ASSISTANT BUTTON ────────── */}
+      <View style={styles.floatingAiButton}>
+        <ToyhourseAIButton
+          size="medium"
+          label="Ai"
+          onPress={() => router.push('/ai-assistant' as any)}
+        />
+      </View>
     </SafeScreen>
   );
 };
+
+const styles = StyleSheet.create({
+  floatingAiButton: {
+    position: 'absolute',
+    bottom: 96,
+    right: 18,
+    zIndex: 999,
+  },
+});
 
 export default ShopScreen;

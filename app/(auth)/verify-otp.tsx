@@ -11,7 +11,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { verifyResetOtp } from '@/lib/api';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { verifyResetOtp, forgotPassword } from '@/lib/api';
 
 const PURPLE = '#8B5CF6';
 const LIGHT_PURPLE = '#F9F5FF';
@@ -20,48 +21,48 @@ const LIGHT_TEXT = '#9CA3AF';
 const OTP_LENGTH = 6;
 
 export default function VerifyOtpScreen() {
+  const insets = useSafeAreaInsets();
   const { email } = useLocalSearchParams<{ email: string }>();
-  const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
+  const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(''));
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [countdown, setCountdown] = useState(60);
-  
-  const inputs = useRef<Array<TextInput | null>>([]);
+
+  const inputs = useRef<(TextInput | null)[]>([]);
 
   useEffect(() => {
-    let timer: any;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     if (countdown > 0) {
       timer = setTimeout(() => setCountdown(countdown - 1), 1000);
     }
-    return () => clearTimeout(timer);
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [countdown]);
 
   const handleOtpChange = (text: string, index: number) => {
-    // Only allow numbers
     const clean = text.replace(/[^0-9]/g, '');
-    
-    // Handle paste
+
+    // Handle full paste (e.g. copied from email/SMS)
     if (clean.length > 1) {
       const newOtp = [...otp];
       for (let i = 0; i < OTP_LENGTH && i < clean.length; i++) {
-        if (index + i < OTP_LENGTH) {
-          newOtp[index + i] = clean[i];
-        }
+        newOtp[i] = clean[i];
       }
       setOtp(newOtp);
-      
-      // Focus the appropriate input after paste
-      const nextIndex = Math.min(index + clean.length, OTP_LENGTH - 1);
-      inputs.current[nextIndex]?.focus();
-      
-      // Auto-submit if all 6 digits are filled
-      if (newOtp.every(d => d !== '')) {
-        handleVerify(newOtp.join(''));
+
+      const nextFocus = Math.min(clean.length - 1, OTP_LENGTH - 1);
+      inputs.current[nextFocus]?.focus();
+
+      if (clean.length >= OTP_LENGTH) {
+        handleVerify(newOtp.slice(0, OTP_LENGTH).join(''));
       }
       return;
     }
 
-    // Normal single-char typing
+    // Single character typing
     const newOtp = [...otp];
     newOtp[index] = clean;
     setOtp(newOtp);
@@ -70,47 +71,80 @@ export default function VerifyOtpScreen() {
     if (clean !== '' && index < OTP_LENGTH - 1) {
       inputs.current[index + 1]?.focus();
     }
-    
-    // Auto-submit on 6th digit
-    if (index === OTP_LENGTH - 1 && clean !== '' && newOtp.slice(0, 5).every(d => d !== '')) {
-      handleVerify(newOtp.join(''));
+
+    // Auto-submit when last digit is filled
+    if (clean !== '' && index === OTP_LENGTH - 1) {
+      const fullCode = newOtp.join('');
+      if (fullCode.length === OTP_LENGTH) {
+        handleVerify(fullCode);
+      }
     }
   };
 
-  const handleBackspace = (text: string, index: number) => {
-    if (text === '' && index > 0) {
-      inputs.current[index - 1]?.focus();
+  const handleBackspace = (_text: string, index: number) => {
+    if (index > 0) {
       const newOtp = [...otp];
-      newOtp[index - 1] = '';
+      if (newOtp[index]) {
+        newOtp[index] = '';
+        setOtp(newOtp);
+      } else {
+        newOtp[index - 1] = '';
+        setOtp(newOtp);
+        inputs.current[index - 1]?.focus();
+      }
+    } else {
+      const newOtp = [...otp];
+      newOtp[0] = '';
       setOtp(newOtp);
     }
   };
 
   const handleVerify = async (codeStr: string) => {
-    if (!email) {
-      setError('Missing email address. Please restart the process.');
+    const cleanEmail = email?.trim().toLowerCase();
+    if (!cleanEmail) {
+      setError('Missing email address. Please go back and restart the process.');
       return;
     }
-    
+
     if (codeStr.length !== OTP_LENGTH) {
       setError('Please enter the full 6-digit code.');
       return;
     }
 
     setError('');
+    setSuccessMessage('');
     setLoading(true);
 
     try {
-      const res = await verifyResetOtp(email, codeStr);
-      // Success! Move to reset-password screen and pass the token
-      router.push({ 
-        pathname: '/(auth)/reset-password', 
-        params: { resetToken: (res as any).resetToken } 
+      const res = await verifyResetOtp(cleanEmail, codeStr);
+      if (res && (res as any).success === false) {
+        throw new Error((res as any).error || 'Invalid or expired code.');
+      }
+
+      // Extract resetToken from data envelope or root
+      const token =
+        (res as any)?.data?.resetToken ??
+        (res as any)?.resetToken ??
+        (res as any)?.data?.token ??
+        (res as any)?.token;
+
+      if (!token) {
+        throw new Error('Verification succeeded but reset token was not received. Please try again.');
+      }
+
+      // Navigate to reset password with valid token
+      router.push({
+        pathname: '/(auth)/reset-password',
+        params: { resetToken: token, email: cleanEmail },
       });
     } catch (err: any) {
-      const msg = err?.response?.data?.error ?? err?.message ?? 'Failed to verify code.';
+      const msg =
+        err?.response?.data?.error ||
+        err?.response?.data?.message ||
+        err?.message ||
+        'Failed to verify code.';
       setError(msg);
-      // Clear OTP on error so they can retype
+      // Clear OTP on error so user can re-enter cleanly
       setOtp(Array(OTP_LENGTH).fill(''));
       inputs.current[0]?.focus();
     } finally {
@@ -118,11 +152,38 @@ export default function VerifyOtpScreen() {
     }
   };
 
-  const handleResend = () => {
-    if (countdown > 0) return;
-    // Go back to forgot-password to request a new code
-    // The forgot-password screen will trigger the API call again
-    router.back();
+  const handleResend = async () => {
+    if (countdown > 0 || resending) return;
+
+    const cleanEmail = email?.trim().toLowerCase();
+    if (!cleanEmail) {
+      setError('Missing email address. Please return to the previous screen.');
+      return;
+    }
+
+    setError('');
+    setSuccessMessage('');
+    setResending(true);
+
+    try {
+      const res = await forgotPassword(cleanEmail);
+      if (res && (res as any).success === false) {
+        throw new Error((res as any).error || 'Failed to resend code.');
+      }
+      setCountdown(60);
+      setSuccessMessage('A new 6-digit code has been sent to your email.');
+      setOtp(Array(OTP_LENGTH).fill(''));
+      inputs.current[0]?.focus();
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.error ||
+        err?.response?.data?.message ||
+        err?.message ||
+        'Failed to resend code.';
+      setError(msg);
+    } finally {
+      setResending(false);
+    }
   };
 
   return (
@@ -132,39 +193,124 @@ export default function VerifyOtpScreen() {
     >
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24, paddingVertical: 40 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: 'center',
+          paddingHorizontal: 24,
+          paddingTop: Math.max(insets.top + 60, 80),
+          paddingBottom: Math.max(insets.bottom + 20, 40),
+        }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         {/* Back button */}
         <TouchableOpacity
           onPress={() => router.back()}
-          style={{ position: 'absolute', top: 52, left: 24, width: 42, height: 42, borderRadius: 21, backgroundColor: '#FFF', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}
+          style={{
+            position: 'absolute',
+            top: Math.max(insets.top + 10, 24),
+            left: 24,
+            width: 42,
+            height: 42,
+            borderRadius: 21,
+            backgroundColor: '#FFF',
+            alignItems: 'center',
+            justifyContent: 'center',
+            shadowColor: '#000',
+            shadowOpacity: 0.06,
+            shadowRadius: 8,
+            elevation: 2,
+            zIndex: 10,
+          }}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <Ionicons name="arrow-back" size={22} color={DARK_TEXT} />
         </TouchableOpacity>
 
         {/* Header */}
-        <View style={{ alignItems: 'center', marginBottom: 36, marginTop: 40 }}>
-          <View style={{ width: 100, height: 100, borderRadius: 50, backgroundColor: '#E9D5FF', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
+        <View style={{ alignItems: 'center', marginBottom: 36 }}>
+          <View
+            style={{
+              width: 100,
+              height: 100,
+              borderRadius: 50,
+              backgroundColor: '#E9D5FF',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 24,
+            }}
+          >
             <Ionicons name="keypad-outline" size={48} color={PURPLE} />
           </View>
-          <Text style={{ color: DARK_TEXT, fontSize: 28, fontWeight: '800', letterSpacing: -0.5, marginBottom: 8, textAlign: 'center' }}>
+          <Text
+            style={{
+              color: DARK_TEXT,
+              fontSize: 28,
+              fontWeight: '800',
+              letterSpacing: -0.5,
+              marginBottom: 8,
+              textAlign: 'center',
+            }}
+          >
             Enter Code
           </Text>
           <Text style={{ color: LIGHT_TEXT, fontSize: 15, textAlign: 'center', lineHeight: 22 }}>
-            We've sent a 6-digit verification code to
+            {"We've sent a 6-digit verification code to"}
           </Text>
-          <Text style={{ color: DARK_TEXT, fontSize: 15, textAlign: 'center', fontWeight: '700', marginTop: 4 }}>
+          <Text
+            style={{
+              color: DARK_TEXT,
+              fontSize: 15,
+              textAlign: 'center',
+              fontWeight: '700',
+              marginTop: 4,
+            }}
+          >
             {email || 'your email address'}
           </Text>
         </View>
 
-        {/* Error */}
+        {/* Success message */}
+        {successMessage ? (
+          <View
+            style={{
+              backgroundColor: '#ECFDF5',
+              borderWidth: 1,
+              borderColor: '#A7F3D0',
+              borderRadius: 16,
+              padding: 12,
+              marginBottom: 20,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
+            <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+            <Text style={{ color: '#065F46', fontSize: 14, fontWeight: '600', flex: 1 }}>
+              {successMessage}
+            </Text>
+          </View>
+        ) : null}
+
+        {/* Error message */}
         {error ? (
-          <View style={{ backgroundColor: '#FEF2F2', borderWidth: 1, borderColor: '#FECACA', borderRadius: 16, padding: 12, marginBottom: 20, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <View
+            style={{
+              backgroundColor: '#FEF2F2',
+              borderWidth: 1,
+              borderColor: '#FECACA',
+              borderRadius: 16,
+              padding: 12,
+              marginBottom: 20,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
             <Ionicons name="alert-circle" size={20} color="#EF4444" />
-            <Text style={{ color: '#EF4444', fontSize: 14, fontWeight: '600', flex: 1 }}>{error}</Text>
+            <Text style={{ color: '#EF4444', fontSize: 14, fontWeight: '600', flex: 1 }}>
+              {error}
+            </Text>
           </View>
         ) : null}
 
@@ -173,15 +319,17 @@ export default function VerifyOtpScreen() {
           {otp.map((digit, index) => (
             <TextInput
               key={index}
-              ref={(ref) => { inputs.current[index] = ref; }}
+              ref={(ref) => {
+                inputs.current[index] = ref;
+              }}
               style={{
-                width: 50,
-                height: 60,
+                width: 48,
+                height: 58,
                 backgroundColor: '#FFF',
                 borderWidth: 2,
                 borderColor: digit ? PURPLE : '#E5E7EB',
                 borderRadius: 12,
-                fontSize: 24,
+                fontSize: 22,
                 fontWeight: '700',
                 color: DARK_TEXT,
                 textAlign: 'center',
@@ -199,16 +347,24 @@ export default function VerifyOtpScreen() {
                 }
               }}
               keyboardType="number-pad"
-              maxLength={6}
+              maxLength={OTP_LENGTH}
               selectTextOnFocus
-              contextMenuHidden
+              editable={!loading}
             />
           ))}
         </View>
 
         {/* Verify button */}
         <TouchableOpacity
-          style={{ backgroundColor: PURPLE, borderRadius: 24, height: 60, alignItems: 'center', justifyContent: 'center', opacity: loading ? 0.8 : 1, marginBottom: 24 }}
+          style={{
+            backgroundColor: PURPLE,
+            borderRadius: 24,
+            height: 60,
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: loading ? 0.8 : 1,
+            marginBottom: 24,
+          }}
           activeOpacity={0.8}
           onPress={() => handleVerify(otp.join(''))}
           disabled={loading}
@@ -220,21 +376,27 @@ export default function VerifyOtpScreen() {
           )}
         </TouchableOpacity>
 
-        {/* Resend */}
+        {/* Resend button */}
         <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ color: LIGHT_TEXT, fontSize: 15 }}>Didn't receive the code? </Text>
-          <TouchableOpacity 
+          <Text style={{ color: LIGHT_TEXT, fontSize: 15 }}>{"Didn't receive the code? "}</Text>
+          <TouchableOpacity
             onPress={handleResend}
-            disabled={countdown > 0}
+            disabled={countdown > 0 || resending}
             activeOpacity={0.7}
           >
-            <Text style={{ 
-              color: countdown > 0 ? LIGHT_TEXT : PURPLE, 
-              fontWeight: '700', 
-              fontSize: 15 
-            }}>
-              {countdown > 0 ? `Resend in ${countdown}s` : 'Resend Code'}
-            </Text>
+            {resending ? (
+              <ActivityIndicator size="small" color={PURPLE} style={{ marginLeft: 4 }} />
+            ) : (
+              <Text
+                style={{
+                  color: countdown > 0 ? LIGHT_TEXT : PURPLE,
+                  fontWeight: '700',
+                  fontSize: 15,
+                }}
+              >
+                {countdown > 0 ? `Resend in ${countdown}s` : 'Resend Code'}
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
       </ScrollView>

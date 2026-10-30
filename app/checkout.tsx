@@ -56,7 +56,7 @@ export default function CheckoutScreen() {
         zip: defaultAddr.zipCode || prev.zip,
       }));
     }
-  }, [addresses]);
+  }, [addresses]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const updateField = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));

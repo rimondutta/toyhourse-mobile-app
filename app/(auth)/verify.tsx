@@ -18,7 +18,7 @@ const LIGHT_TEXT = "#9CA3AF";
 
 const VerifyScreen = () => {
   const [code, setCode] = useState(["", "", "", ""]);
-  const inputs = useRef<Array<TextInput | null>>([]);
+  const inputs = useRef<(TextInput | null)[]>([]);
 
   const handleCodeChange = (text: string, index: number) => {
     const newCode = [...code];
@@ -109,7 +109,7 @@ const VerifyScreen = () => {
 
         {/* RESEND */}
         <View style={{ flexDirection: "row", justifyContent: "center", gap: 4, marginBottom: 32 }}>
-          <Text style={{ color: LIGHT_TEXT, fontSize: 15 }}>Didn't receive the code?</Text>
+          <Text style={{ color: LIGHT_TEXT, fontSize: 15 }}>{"Didn't receive the code?"}</Text>
           <TouchableOpacity activeOpacity={0.7}>
             <Text style={{ color: PURPLE, fontWeight: "700", fontSize: 15 }}>Resend</Text>
           </TouchableOpacity>

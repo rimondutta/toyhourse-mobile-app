@@ -2,13 +2,13 @@ import SafeScreen from "@/components/SafeScreen";
 import { useAuth } from "@/context/AuthContext";
 import { useNotifications } from "@/hooks/useNotifications";
 
-import { ScrollView, Text, TouchableOpacity, View, RefreshControl } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View, RefreshControl, Alert, ActivityIndicator } from "react-native";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
-import { Alert, ActivityIndicator } from "react-native";
+
 import apiClient from "@/lib/api";
 
 const MENU_ITEMS = [

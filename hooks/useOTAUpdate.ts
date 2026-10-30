@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import * as Updates from 'expo-updates';
 
 export type OTAStatus =
@@ -21,6 +20,16 @@ export interface OTAUpdateState {
 }
 
 export function useOTAUpdate(): OTAUpdateState {
+  const {
+    isUpdateAvailable,
+    isUpdatePending,
+    isChecking,
+    isDownloading,
+    availableUpdate,
+    checkError,
+    downloadError,
+  } = Updates.useUpdates();
+
   if (!Updates.isEnabled) {
     return {
       status: 'up-to-date',
@@ -33,16 +42,6 @@ export function useOTAUpdate(): OTAUpdateState {
     };
   }
 
-  const {
-    isUpdateAvailable,
-    isUpdatePending,
-    isChecking,
-    isDownloading,
-    availableUpdate,
-    checkError,
-    downloadError,
-  } = Updates.useUpdates();
-
   let status: OTAStatus = 'idle';
 
   if (isUpdatePending) {
@@ -52,7 +51,6 @@ export function useOTAUpdate(): OTAUpdateState {
   } else if (isChecking) {
     status = 'checking';
   } else if (isUpdateAvailable) {
-    // If it's available but not downloading yet, we just consider it 'available'
     status = 'available';
   } else if (checkError || downloadError) {
     status = 'error';
@@ -68,19 +66,14 @@ export function useOTAUpdate(): OTAUpdateState {
     manifest?.metadata?.updateMessage ??
     'A new update is available with improvements and bug fixes.';
 
-  // In ON_LOAD mode, Expo checks and downloads automatically.
   const checkForUpdate = async () => {};
-  
+
   const downloadUpdate = async () => {
-    // If it's already downloading, do nothing and let the hook handle it
     if (isDownloading) return;
-    
     try {
       await Updates.fetchUpdateAsync();
-      // We do not manage manual state. The hook's state machine will
-      // eventually trigger isUpdatePending = true.
-    } catch (e: any) {
-      // Ignored. If it throws "already in progress", we just wait.
+    } catch {
+      // Ignored
     }
   };
 

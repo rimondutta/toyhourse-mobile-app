@@ -1,121 +1,204 @@
-import React, { useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useRef, useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
+} from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import Animated, { FadeIn, FadeOut, Layout } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/context/AuthContext';
-import LiquidOrb from './components/LiquidOrb';
-import LiquidGlassSurface from './components/LiquidGlassSurface';
-import GlassInputBar from './components/GlassInputBar';
-import QuickReplyChips from './components/QuickReplyChips';
-import ChatBubble from './components/ChatBubble';
-import ProductRecommendationCard from './components/ProductRecommendationCard';
+import ToyhourseAIHeader from './components/ToyhourseAIHeader';
+import ToyhourseAIGreeting from './components/ToyhourseAIGreeting';
+import ToyhourseAIMessageItem from './components/ToyhourseAIMessageItem';
+import ToyhourseAIInputBar from './components/ToyhourseAIInputBar';
+import ToyhourseAIProductSearch from './components/ToyhourseAIProductSearch';
+import ToyhourseAIVoiceChat from './components/ToyhourseAIVoiceChat';
 import useChatbot from './hooks/useChatbot';
 import type { ChatMessage } from './types';
 
 export default function AIAssistantScreen() {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
-  const { messages, status, errorMessage, sendMessage, retryLastMessage } = useChatbot();
+  const {
+    messages,
+    status,
+    errorMessage,
+    sendMessage,
+    retryLastMessage,
+    clearChat,
+  } = useChatbot();
   const flatListRef = useRef<FlatList>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isVoiceOpen, setIsVoiceOpen] = useState(false);
+  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const isGreeting = messages.length === 0;
-  const firstName = user?.name?.split(' ')[0] || 'there';
+  const hasMessages = messages.length > 0;
+
+  const showToast = (msg: string) => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
+    setToastMessage(msg);
+    toastTimeoutRef.current = setTimeout(() => {
+      setToastMessage(null);
+    }, 2500);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, () => setIsKeyboardVisible(true));
+    const hideSub = Keyboard.addListener(hideEvent, () => setIsKeyboardVisible(false));
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const handleClose = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.back();
   };
 
-  const renderMessage = ({ item }: { item: ChatMessage }) => {
+  const handleNewChat = () => {
+    clearChat();
+    showToast('Started a new conversation');
+  };
+
+  const renderMessage = ({ item, index }: { item: ChatMessage; index: number }) => {
+    const isLastAssistant =
+      item.role === 'assistant' && index === messages.length - 1;
+
     return (
-      <View style={{ marginBottom: item.products?.length ? 24 : 0 }}>
-        <ChatBubble role={item.role} content={item.content} isStreaming={item.isStreaming} />
-        {item.products && item.products.length > 0 && (
-          <View style={styles.productsContainer}>
-            <FlatList
-              horizontal
-              data={item.products}
-              keyExtractor={(p) => p.slug}
-              renderItem={({ item: product }) => <ProductRecommendationCard product={product} />}
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.productsScrollContent}
-            />
-          </View>
-        )}
-      </View>
+      <ToyhourseAIMessageItem
+        message={item}
+        isLastAssistant={isLastAssistant}
+        onRetry={retryLastMessage}
+        onToast={showToast}
+        onAskAI={sendMessage}
+      />
     );
   };
 
   return (
-    <View style={styles.container}>
-      {/* Background Gradient Simulator */}
-      <View style={[StyleSheet.absoluteFillObject, styles.bgBase]} />
-      <View style={[styles.bgGlow, styles.bgGlow1]} />
-      <View style={[styles.bgGlow, styles.bgGlow2]} />
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      {/* Dark status bar for clean light theme */}
+      <StatusBar style="dark" />
 
-      {/* Header Close Button */}
-      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-        {!isGreeting && (
-          <Animated.View entering={FadeIn} style={styles.headerOrbContainer}>
-             {/* Small orb in header during conversation */}
-             <LiquidOrb size="avatar" active={status === 'loading' || status === 'streaming'} />
-          </Animated.View>
-        )}
-        <View style={{ flex: 1 }} />
-        <TouchableOpacity activeOpacity={0.7} onPress={handleClose}>
-          <LiquidGlassSurface intensity={40} tint="light" borderRadius={20} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color="#FFF" />
-          </LiquidGlassSurface>
-        </TouchableOpacity>
-      </View>
+      {/* Clean Light Header */}
+      <ToyhourseAIHeader
+        onClose={handleClose}
+        onNewChat={handleNewChat}
+        onToggleSearch={() => setIsSearchOpen(prev => !prev)}
+        isSearchActive={isSearchOpen}
+        userName={user?.name || 'User'}
+        hasMessages={hasMessages}
+      />
 
-      {isGreeting ? (
-        <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.greetingContainer}>
-          <View style={styles.heroOrbContainer}>
-            <LiquidOrb size="hero" active={status === 'loading' || status === 'streaming'} />
+      {/* Temporary Toast Banner */}
+      {toastMessage && (
+        <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(200)} style={styles.toastContainer}>
+          <View style={styles.toastPill}>
+            <Text style={styles.toastText}>{toastMessage}</Text>
           </View>
-          <Text style={styles.greetingTitle}>Hey {firstName},</Text>
-          <Text style={styles.greetingSubtitle}>What can I help with?</Text>
-        </Animated.View>
-      ) : (
-        <Animated.View entering={FadeIn} layout={Layout.duration(300)} style={styles.chatContainer}>
-          <FlatList
-            ref={flatListRef}
-            data={messages}
-            keyExtractor={item => item.id}
-            renderItem={renderMessage}
-            contentContainerStyle={styles.chatScrollContent}
-            showsVerticalScrollIndicator={false}
-            onContentSizeChange={() => {
-              flatListRef.current?.scrollToEnd({ animated: true });
-            }}
-          />
         </Animated.View>
       )}
 
-      {/* Footer Area */}
-      <Animated.View layout={Layout.duration(300)} style={[styles.footer, { paddingBottom: insets.bottom || 16 }]}>
-        {isGreeting && (
-          <Animated.View entering={FadeIn} exiting={FadeOut}>
-            <QuickReplyChips onSelect={sendMessage} />
-          </Animated.View>
-        )}
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoid}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 56 : 0}
+      >
+        {/* Main Content: Greeting or Message List */}
+        <View style={styles.content}>
+          {!hasMessages ? (
+            <ToyhourseAIGreeting
+              onSelectPrompt={sendMessage}
+              onOpenSearch={() => setIsSearchOpen(true)}
+            />
+          ) : (
+            <FlatList
+              ref={flatListRef}
+              data={messages}
+              keyExtractor={item => item.id}
+              renderItem={renderMessage}
+              contentContainerStyle={styles.listContent}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+              onContentSizeChange={() => {
+                flatListRef.current?.scrollToEnd({ animated: true });
+              }}
+            />
+          )}
+        </View>
+
+        {/* Error state if request failed */}
         {errorMessage && (
           <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.errorContainer}>
-            <Text style={styles.errorText}>{errorMessage}</Text>
-            <TouchableOpacity onPress={retryLastMessage}>
-              <Text style={styles.retryText}>Retry</Text>
-            </TouchableOpacity>
+            <View style={styles.errorInner}>
+              <Text style={styles.errorText}>{errorMessage}</Text>
+              <TouchableOpacity onPress={retryLastMessage} style={styles.retryBtn}>
+                <Text style={styles.retryBtnText}>Retry</Text>
+              </TouchableOpacity>
+            </View>
           </Animated.View>
         )}
-        <GlassInputBar 
-          onSend={sendMessage} 
-          disabled={status === 'loading' || status === 'streaming'} 
+
+        {/* Bottom Floating Input Dock matching reference image */}
+        <View style={{ paddingBottom: isKeyboardVisible ? 6 : Math.max(insets.bottom, 12) }}>
+          <ToyhourseAIInputBar
+            onSend={sendMessage}
+            disabled={status === 'loading' || status === 'streaming'}
+            onToast={showToast}
+            onOpenVoice={() => setIsVoiceOpen(true)}
+          />
+        </View>
+      </KeyboardAvoidingView>
+
+      {/* Interactive AI Product Search Modal/Drawer */}
+      {isSearchOpen && (
+        <ToyhourseAIProductSearch
+          onClose={() => setIsSearchOpen(false)}
+          onAskAI={(prompt) => {
+            setIsSearchOpen(false);
+            sendMessage(prompt);
+          }}
+          onToast={showToast}
         />
-      </Animated.View>
+      )}
+
+      {/* Voice Chat Mode Modal matching Reference Screen 3 */}
+      {isVoiceOpen && (
+        <ToyhourseAIVoiceChat
+          onClose={() => setIsVoiceOpen(false)}
+          onSendVoicePrompt={(prompt) => {
+            setIsVoiceOpen(false);
+            sendMessage(prompt);
+          }}
+          onToast={showToast}
+        />
+      )}
     </View>
   );
 }
@@ -123,104 +206,74 @@ export default function AIAssistantScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F0A1E',
+    backgroundColor: '#FFFFFF',
   },
-  bgBase: {
-    backgroundColor: '#0F0A1E',
+  keyboardAvoid: {
+    flex: 1,
   },
-  bgGlow: {
+  content: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  listContent: {
+    paddingTop: 16,
+    paddingBottom: 20,
+    backgroundColor: '#FFFFFF',
+  },
+  toastContainer: {
     position: 'absolute',
-    width: 600,
-    height: 600,
-    borderRadius: 300,
-    opacity: 0.15,
-  },
-  bgGlow1: {
-    top: -200,
-    left: -200,
-    backgroundColor: '#7C3AED',
-  },
-  bgGlow2: {
-    bottom: -100,
-    right: -200,
-    backgroundColor: '#3B82F6',
-  },
-  header: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
+    top: 70,
+    left: 0,
+    right: 0,
     alignItems: 'center',
-    zIndex: 10,
+    zIndex: 99,
   },
-  headerOrbContainer: {
-    marginLeft: 4,
+  toastPill: {
+    backgroundColor: '#111827',
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    borderRadius: 20,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    elevation: 4,
   },
-  closeButton: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.1)',
-  },
-  greetingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    marginTop: -80, // visual offset
-  },
-  heroOrbContainer: {
-    marginBottom: 40,
-  },
-  greetingTitle: {
-    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-    fontSize: 32,
-    fontStyle: 'italic',
-    fontWeight: '300',
-    color: '#E0E7FF',
-    marginBottom: 8,
-  },
-  greetingSubtitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
+  toastText: {
     color: '#FFFFFF',
-  },
-  chatContainer: {
-    flex: 1,
-  },
-  chatScrollContent: {
-    paddingTop: 24,
-    paddingBottom: 24,
-  },
-  productsContainer: {
-    marginLeft: 60, // Align with assistant text (44 avatar + 16 gap)
-    marginTop: -8,
-  },
-  productsScrollContent: {
-    paddingRight: 24,
-  },
-  footer: {
-    zIndex: 10,
+    fontSize: 13,
+    fontWeight: '600',
   },
   errorContainer: {
+    marginHorizontal: 16,
+    marginBottom: 8,
+  },
+  errorInner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: 'rgba(239, 68, 68, 0.2)',
-    marginHorizontal: 16,
-    marginBottom: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: '#FEE2E2',
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.4)',
+    borderColor: '#FCA5A5',
   },
   errorText: {
-    color: '#FECACA',
-    fontSize: 14,
+    color: '#991B1B',
+    fontSize: 13,
+    flex: 1,
   },
-  retryText: {
-    color: '#FFF',
-    fontWeight: 'bold',
-    fontSize: 14,
+  retryBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    backgroundColor: '#DC2626',
+    borderRadius: 8,
+    marginLeft: 8,
+  },
+  retryBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 12,
   },
 });

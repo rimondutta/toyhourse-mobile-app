@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getNotifications, getUnreadCount, markNotificationRead, markAllNotificationsRead, AppNotification } from '@/lib/api';
+import { getNotifications, getUnreadCount, markNotificationRead, markAllNotificationsRead } from '@/lib/api';
 
 export function useNotifications() {
   const queryClient = useQueryClient();

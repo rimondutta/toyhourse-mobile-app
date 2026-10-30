@@ -40,7 +40,7 @@ const LoginScreen = () => {
     } else if (response?.type === "error") {
       setError(response.error?.message || "Google Sign-In failed");
     }
-  }, [response]);
+  }, [response]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleGoogleAuth = async (accessToken: string) => {
     setLoading(true);
@@ -217,7 +217,7 @@ const LoginScreen = () => {
 
         {/* BOTTOM LINKS */}
         <View style={{ flexDirection: "row", justifyContent: "center", gap: 4, marginTop: "auto" }}>
-          <Text style={{ color: LIGHT_TEXT, fontSize: 15 }}>Don't have an account?</Text>
+          <Text style={{ color: LIGHT_TEXT, fontSize: 15 }}>{"Don't have an account?"}</Text>
           <TouchableOpacity onPress={() => router.push("/(auth)/register")} activeOpacity={0.7}>
             <Text style={{ color: PURPLE, fontWeight: "700", fontSize: 15 }}>Sign Up</Text>
           </TouchableOpacity>

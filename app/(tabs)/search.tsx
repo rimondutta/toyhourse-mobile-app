@@ -1,4 +1,5 @@
 import SafeScreen from "@/components/SafeScreen";
+import ToyhourseAIButton from "@/components/ToyhourseAIButton";
 import { useState, useCallback } from "react";
 import {
   View,
@@ -7,6 +8,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   FlatList,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
@@ -17,7 +19,6 @@ import { router } from "expo-router";
 import useCart from "@/hooks/useCart";
 import useWishlist from "@/hooks/useWishlist";
 import * as ImagePicker from "expo-image-picker";
-import { Alert } from "react-native";
 import { optimizeCloudinaryUrl } from "@/lib/utils";
 
 const PURPLE = '#8B5CF6';
@@ -85,7 +86,6 @@ export default function SearchScreen() {
 
   const processImageSearch = (result: ImagePicker.ImagePickerResult) => {
     if (!result.canceled) {
-      // Mock an image search
       setIsImageSearching(true);
       setTimeout(() => {
         setIsImageSearching(false);
@@ -136,7 +136,7 @@ export default function SearchScreen() {
             <Ionicons name="search" size={20} color={LIGHT_TEXT} />
             <TextInput
               style={{ flex: 1, marginLeft: 12, color: DARK_TEXT, fontSize: 15 }}
-              placeholder="Search beauty essentials..."
+              placeholder="Search products..."
               placeholderTextColor={LIGHT_TEXT}
               value={query}
               onChangeText={handleChangeText}
@@ -174,8 +174,16 @@ export default function SearchScreen() {
             </View>
             <Text style={{ color: DARK_TEXT, fontSize: 24, fontWeight: '700', marginBottom: 8 }}>Find anything</Text>
             <Text style={{ color: LIGHT_TEXT, textAlign: 'center' }}>
-              Search for your favorite beauty products, brands, or categories
+              Search for your favorite products, brands, or categories
             </Text>
+
+            {/* Direct Toyhourse AI Assistant trigger from Search */}
+            <ToyhourseAIButton
+              size="large"
+              label="Ask Toyhourse AI"
+              onPress={() => router.push('/ai-assistant' as any)}
+              style={{ marginTop: 22 }}
+            />
           </View>
         ) : results && results.length === 0 ? (
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 }}>
@@ -184,7 +192,7 @@ export default function SearchScreen() {
             </View>
             <Text style={{ color: DARK_TEXT, fontSize: 24, fontWeight: '700', marginBottom: 8 }}>No results</Text>
             <Text style={{ color: LIGHT_TEXT, textAlign: 'center' }}>
-              We couldn't find what you're looking for. Try a different keyword.
+              {"We couldn't find what you're looking for. Try a different keyword."}
             </Text>
           </View>
         ) : (

@@ -1,14 +1,16 @@
+import "@/lib/ignoreWarnings";
+import { useEffect, useState } from "react";
 import { Stack, useNavigationContainerRef } from "expo-router";
-import "../global.css";
+import { StatusBar } from "expo-status-bar";
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AuthProvider } from "@/context/AuthContext";
 import * as Sentry from "@sentry/react-native";
-import { LogBox } from "react-native";
-import { useEffect, useRef } from "react";
-
-LogBox.ignoreLogs([
-  "SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead.",
-]);
+import { AuthProvider } from "@/context/AuthContext";
+import { useLastUpdated } from "@/hooks/useLastUpdated";
+import { useAppUpdate } from "@/hooks/useAppUpdate";
+import { useOTAUpdate } from "@/hooks/useOTAUpdate";
+import AppUpdateModal from "@/components/AppUpdateModal";
+import OTAUpdateModal from "@/components/OTAUpdateModal";
+import "../global.css";
 
 // ── Sentry Navigation Integration ────────────────────────────────────────────
 // Tracks screen transitions as Sentry transactions (breadcrumbs + spans).
@@ -62,14 +64,6 @@ const queryClient = new QueryClient({
     },
   }),
 });
-
-import { useLastUpdated } from "@/hooks/useLastUpdated";
-import { useAppUpdate } from "@/hooks/useAppUpdate";
-import { useOTAUpdate } from "@/hooks/useOTAUpdate";
-import { useState } from "react";
-import AppUpdateModal from "@/components/AppUpdateModal";
-import OTAUpdateModal from "@/components/OTAUpdateModal";
-import { StatusBar } from "expo-status-bar";
 
 // ── Environment flag: set EXPO_PUBLIC_FORCE_OTA_UPDATE=true to enforce ──────
 const FORCE_OTA_UPDATE =

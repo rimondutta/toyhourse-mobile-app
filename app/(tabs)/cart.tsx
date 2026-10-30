@@ -1,29 +1,29 @@
 import SafeScreen from "@/components/SafeScreen";
-import { useAddresses } from "@/hooks/useAddressess";
+
 import useCart from "@/hooks/useCart";
 import apiClient from "@/lib/api";
-import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 import { useState } from "react";
-import { TextInput } from "react-native";
-import { Address } from "@/types";
+
+
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import OrderSummary from "@/components/OrderSummary";
-import { useAuth } from "@/context/AuthContext";
+
 import { optimizeCloudinaryUrl } from "@/lib/utils";
 
-import * as Sentry from "@sentry/react-native";
+
 
 const CartScreen = () => {
-  const { user } = useAuth();
-  const { cart, isLoading, isError, addToCart, removeFromCart, updateQuantity, cartTotal, isRemoving, isUpdating, cartItemCount, clearCart } = useCart();
-  const { addresses } = useAddresses();
+
+  const { cart, isLoading, isError, removeFromCart, updateQuantity, cartTotal, isRemoving, isUpdating, cartItemCount } = useCart();
+
   const api = apiClient;
 
 
-  const [paymentLoading, setPaymentLoading] = useState(false);
+
 
   // Coupon state
   const [couponCode, setCouponCode] = useState("");
@@ -273,10 +273,10 @@ const CartScreen = () => {
           className="bg-primary rounded-2xl overflow-hidden"
           activeOpacity={0.9}
           onPress={handleCheckout}
-          disabled={paymentLoading}
+          disabled={cartItems.length === 0}
         >
           <View className="py-5 flex-row items-center justify-center">
-            {paymentLoading ? (
+            {false ? (
               <ActivityIndicator size="small" color="#0F172A" />
             ) : (
               <>
